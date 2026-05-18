@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>사회적 이야기 작성 도구</title>
+<meta name="theme-color" content="#476840">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#faf8f3;--card:#fff;--border:#e4dfd6;--text:#2c2c2c;--sub:#888;
+  --pri:#5b7a52;--pri-l:#e9f0e6;--pri-d:#476840;
+  --desc:#3a7ca5;--desc-l:#e4f0f8;
+  --persp:#8b6bab;--persp-l:#f0e8f6;
+  --coach:#c97b3c;--coach-l:#fdf0e8;
+  --affirm:#d4a843;--affirm-l:#fdf6e3;
+  --danger:#c0392b;--ok:#27ae60;
+  --radius:12px;--shadow:0 2px 12px rgba(0,0,0,.05);
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.7;padding-bottom:80px}
+
+.header{background:linear-gradient(135deg,#5b7a52,#3a7ca5);color:#fff;padding:20px;text-align:center}
+.header h1{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.header p{font-size:12px;opacity:.85;margin-top:4px}
+
+.tabs{display:flex;background:var(--card);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:99}
+.tab{flex:1;padding:14px 8px;text-align:center;font-size:13px;font-weight:500;color:var(--sub);cursor:pointer;border-bottom:3px solid transparent;transition:.2s}
+.tab.active{color:var(--pri);border-bottom-color:var(--pri);background:var(--pri-l)}
+
+.section{display:none;padding:16px;max-width:800px;margin:0 auto}
+.section.active{display:block}
+
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-t{font-size:16px;font-weight:600;margin-bottom:6px}
+.card-d{font-size:12px;color:var(--sub);margin-bottom:12px;line-height:1.6}
+
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:12px;font-weight:500;margin-bottom:4px;color:var(--sub)}
+input[type="text"],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--bg)}
+textarea{resize:vertical;min-height:80px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:.2s}
+.btn-pri{background:var(--pri);color:#fff}.btn-pri:hover{background:var(--pri-d)}
+.btn-out{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-out:hover{background:var(--pri-l)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-block{width:100%}
+.btn-danger{background:var(--danger);color:#fff}
+
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:120px}
+
+/* Template grid */
+.tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.tmpl-card{padding:14px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:.2s;text-align:center}
+.tmpl-card:hover{border-color:var(--pri);background:var(--pri-l)}
+.tmpl-card.selected{border-color:var(--pri);background:var(--pri-l)}
+.tmpl-icon{font-size:32px;margin-bottom:6px}
+.tmpl-name{font-size:13px;font-weight:600}
+.tmpl-desc{font-size:11px;color:var(--sub);margin-top:2px}
+.tmpl-fn{display:inline-block;padding:2px 6px;border-radius:10px;font-size:10px;margin-top:4px;background:#e8e8e0;color:#666}
+
+/* Sentence types */
+.sent-type{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;margin-right:4px}
+.st-desc{background:var(--desc-l);color:var(--desc)}
+.st-persp{background:var(--persp-l);color:var(--persp)}
+.st-coach{background:var(--coach-l);color:var(--coach)}
+.st-affirm{background:var(--affirm-l);color:var(--affirm)}
+
+/* Story editor */
+.sentence-row{display:flex;gap:8px;align-items:flex-start;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fff;transition:.15s}
+.sentence-row:hover{background:var(--pri-l)}
+.sentence-row .s-num{min-width:24px;height:24px;border-radius:50%;background:var(--pri);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:6px}
+.sentence-row textarea{flex:1;border:none;background:transparent;font-size:14px;font-family:inherit;resize:none;min-height:40px;padding:4px 0;line-height:1.6}
+.sentence-row textarea:focus{outline:none}
+.sentence-row select{width:80px;padding:4px;font-size:11px;border:1px solid var(--border);border-radius:6px}
+.sentence-row .s-del{color:var(--danger);cursor:pointer;font-size:18px;padding:4px;opacity:.5}
+.sentence-row .s-del:hover{opacity:1}
+.sentence-row .s-handle{cursor:grab;color:var(--sub);padding:4px;font-size:16px}
+
+/* Criteria checker */
+.criteria-item{display:flex;gap:8px;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px}
+.criteria-pass{background:#d5f5e3}
+.criteria-fail{background:#fdecea}
+.criteria-icon{font-size:18px}
+
+/* Ratio bar */
+.ratio-bar{height:28px;border-radius:14px;overflow:hidden;display:flex;margin:8px 0}
+.ratio-seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;transition:.3s}
+
+/* Preview */
+.preview-box{background:#fff;border:2px solid var(--border);border-radius:var(--radius);padding:32px;max-width:600px;margin:0 auto}
+.preview-title{font-family:'Nanum Myeongjo',serif;font-size:22px;font-weight:700;text-align:center;margin-bottom:24px;color:var(--pri-d)}
+.preview-sentence{font-family:'Nanum Myeongjo',serif;font-size:16px;line-height:2;margin-bottom:12px;text-indent:1em}
+.preview-meta{font-size:11px;color:var(--sub);text-align:right;margin-top:20px;border-top:1px solid var(--border);padding-top:8px}
+
+/* Saved list */
+.saved-item{padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.saved-item:hover{background:var(--pri-l)}
+
+.empty-msg{text-align:center;padding:30px;color:var(--sub);font-size:13px}
+
+/* Level cards */
+.level-card{flex:1;padding:10px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;text-align:center;transition:.2s}
+.level-card:hover{border-color:var(--pri);background:var(--pri-l)}
+.level-card.selected{border-color:var(--pri);background:var(--pri-l)}
+
+/* Image placeholder for Level 1 */
+.img-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:80px;border:2px dashed var(--border);border-radius:8px;background:#fafaf5;color:var(--sub);font-size:12px;margin-top:6px;cursor:pointer;transition:.2s}
+.img-placeholder:hover{border-color:var(--pri);background:var(--pri-l)}
+.preview-img-placeholder{display:flex;align-items:center;justify-content:center;width:100%;height:100px;border:2px dashed #ccc;border-radius:8px;background:#f9f9f5;color:#aaa;font-size:13px;margin:8px 0}
+
+@media print{
+  .header,.tabs,.btn,.card-d,.criteria-item,.ratio-bar{display:none!important}
+  .section{display:block!important;padding:0}
+  .preview-box{border:none;padding:20px;box-shadow:none}
+  .preview-sentence{font-size:18px;line-height:2.2}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📖 사회적 이야기 작성 도구</h1>
+  <p>Carol Gray Social Stories™ 10.4 기준</p>
+  <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 뜨거운 온도 이노아(특수교사 연구회)</p>
+</div>
+
+<!-- BIP에서 온 경우 돌아가기 배너 -->
+<div id="back-banner" style="display:none;background:#fdf6e3;border-bottom:1px solid #e8dfc8;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;position:sticky;top:0;z-index:200">
+  <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+    <span style="font-size:18px">🔗</span>
+    <div>
+      <div style="font-weight:600;color:#7a5c1e">BIP에서 넘어온 세션</div>
+      <div id="back-banner-info" style="font-size:11px;color:#a08652;margin-top:2px"></div>
+    </div>
+  </div>
+  <button onclick="location.href='index.html#bip'" style="background:#5b7a52;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit">← BIP로 돌아가기</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab(0)">① 템플릿</div>
+  <div class="tab" onclick="showTab(1)">② 편집</div>
+  <div class="tab" onclick="showTab(2)">③ 10.4 체크</div>
+  <div class="tab" onclick="showTab(3)">④ 미리보기</div>
+  <div class="tab" onclick="showTab(4)">📂 저장목록</div>
+</div>
+
+<!-- ══════ TAB 1: 템플릿 선택 ══════ -->
+<div class="section active" id="sec-0">
+  <div class="card">
+    <div class="card-t">상황 템플릿 선택</div>
+    <div class="card-d">학교에서 자주 다루는 상황을 선택하면 10.4 기준에 맞는 초안이 자동 생성됩니다. 직접 작성하려면 맨 아래 "빈 양식"을 선택하세요.</div>
+    <div class="fg"><label>학생 이름 (이야기 속 주인공)</label>
+      <input type="text" id="tmpl-name" placeholder="예: 민준이, ○○">
+    </div>
+    <div class="fg"><label>수준 선택</label>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <div class="level-card" data-level="1" onclick="selectLevel(1)">
+          <div style="font-size:20px">🖼</div>
+          <div style="font-size:12px;font-weight:600">Level 1</div>
+          <div style="font-size:10px;color:var(--sub)">그림중심</div>
+          <div style="font-size:10px;color:var(--sub)">무발화/초기</div>
+        </div>
+        <div class="level-card" data-level="2" onclick="selectLevel(2)">
+          <div style="font-size:20px">📝</div>
+          <div style="font-size:12px;font-weight:600">Level 2</div>
+          <div style="font-size:10px;color:var(--sub)">짧은 문장</div>
+          <div style="font-size:10px;color:var(--sub)">2~3어절</div>
+        </div>
+        <div class="level-card selected" data-level="3" onclick="selectLevel(3)">
+          <div style="font-size:20px">📖</div>
+          <div style="font-size:12px;font-weight:600">Level 3</div>
+          <div style="font-size:10px;color:var(--sub)">완전 문장</div>
+          <div style="font-size:10px;color:var(--sub)">일반 수준</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tmpl-grid" id="tmpl-grid"></div>
+</div>
+
+<!-- ══════ TAB 2: 문장 편집 ══════ -->
+<div class="section" id="sec-1">
+  <div class="card">
+    <div class="card-t">이야기 편집</div>
+    <div class="card-d">각 문장의 유형을 확인하고 내용을 수정하세요. 더블클릭하면 유형을 변경할 수 있습니다.</div>
+    <div class="row" style="margin-bottom:12px">
+      <div class="fg"><label>이야기 제목</label><input type="text" id="story-title" placeholder="예: 친구에게 말할 때"></div>
+    </div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
+      <span class="sent-type st-desc">설명문</span>
+      <span class="sent-type st-persp">조망문</span>
+      <span class="sent-type st-coach">코칭문</span>
+      <span class="sent-type st-affirm">긍정확인문</span>
+    </div>
+  </div>
+
+  <div id="sentence-list"></div>
+
+  <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+    <button class="btn btn-out btn-sm" onclick="addSentence('desc')">+ 설명문</button>
+    <button class="btn btn-out btn-sm" onclick="addSentence('persp')">+ 조망문</button>
+    <button class="btn btn-out btn-sm" onclick="addSentence('coach')">+ 코칭문</button>
+    <button class="btn btn-out btn-sm" onclick="addSentence('affirm')">+ 긍정확인문</button>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div style="font-weight:600;font-size:13px;margin-bottom:8px">문장 유형 비율</div>
+    <div class="ratio-bar" id="ratio-bar"></div>
+    <div id="ratio-text" style="font-size:12px;color:var(--sub)"></div>
+  </div>
+</div>
+
+<!-- ══════ TAB 3: 10.4 기준 체크 ══════ -->
+<div class="section" id="sec-2">
+  <div class="card">
+    <div class="card-t">Social Stories 10.4 기준 점검</div>
+    <div class="card-d">Carol Gray(2023) Social Stories 10.4 기준에 따라 이야기를 점검합니다.</div>
+  </div>
+  <div id="criteria-list"></div>
+  <div class="card" style="margin-top:12px">
+    <div id="criteria-summary" style="font-size:14px;font-weight:600;text-align:center"></div>
+  </div>
+</div>
+
+<!-- ══════ TAB 4: 미리보기 ══════ -->
+<div class="section" id="sec-3">
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:12px;background:var(--pri-l);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-weight:600;font-size:13px">미리보기</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-out btn-sm" onclick="window.print()">🖨 인쇄</button>
+        <button class="btn btn-out btn-sm" onclick="exportStoryText()">📄 텍스트</button>
+        <button class="btn btn-pri btn-sm" onclick="saveStory()">💾 저장</button>
+      </div>
+    </div>
+    <div class="preview-box" id="preview-box"></div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <div class="card-d">
+      <strong>활용 팁:</strong> 인쇄 후 학생의 읽기 수준에 맞게 글자 크기를 조절하세요. 필요하면 각 문장에 시각적 지원(그림/사진)을 추가하세요. 이야기는 최소 2주간 반복 읽기를 권장합니다.
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TAB 5: 저장 목록 ══════ -->
+<div class="section" id="sec-4">
+  <div class="card">
+    <div class="card-t">저장된 이야기</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn btn-out btn-sm" onclick="exportAllJSON()">JSON 백업</button>
+      <button class="btn btn-out btn-sm" onclick="importAllJSON()">JSON 복원</button>
+    </div>
+  </div>
+  <div id="saved-list"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════
+const LS = {
+  get(k) { try { return JSON.parse(localStorage.getItem('ss_'+k)) || []; } catch { return []; } },
+  set(k, v) { localStorage.setItem('ss_'+k, JSON.stringify(v)); }
+};
+
+// ═══════════════════════════════════════
+// SENTENCE TYPES
+// ═══════════════════════════════════════
+const TYPES = {
+  desc:   { label: '설명문',     class: 'st-desc',   color: '#3a7ca5', desc: '사실적 정보, 상황/배경 서술' },
+  persp:  { label: '조망문',     class: 'st-persp',  color: '#8b6bab', desc: '타인의 생각/감정/반응' },
+  coach:  { label: '코칭문',     class: 'st-coach',  color: '#c97b3c', desc: '적절한 행동 안내 (시도할 수 있다)' },
+  affirm: { label: '긍정확인문', class: 'st-affirm', color: '#d4a843', desc: '학습자의 강점/안전 확인' },
+};
+
+// ═══════════════════════════════════════
+// TEMPLATES
+// ═══════════════════════════════════════
+const TEMPLATES = [
+  {
+    id: 'wait-turn', icon: '✋', name: '차례 기다리기',
+    desc: '활동이나 대화에서 자기 차례를 기다리는 상황',
+    fn: '실물획득 / 관심끌기',
+    gen: (n) => [
+      { type: 'desc', text: `학교에서는 여러 친구들이 함께 생활합니다.` },
+      { type: 'desc', text: `활동을 할 때 모든 사람이 한꺼번에 할 수 없을 때가 있습니다.` },
+      { type: 'desc', text: `그럴 때 사람들은 차례를 정해서 한 명씩 합니다.` },
+      { type: 'persp', text: `차례를 기다리면 다른 친구들은 '공정하다'고 느낍니다.` },
+      { type: 'persp', text: `선생님도 차례를 잘 기다리는 모습을 보면 기쁘게 생각합니다.` },
+      { type: 'desc', text: `${n}도 차례를 기다려야 할 때가 있습니다.` },
+      { type: 'coach', text: `${n}은(는) 차례를 기다릴 때 손을 무릎 위에 올려놓고 기다려 볼 수 있습니다.` },
+      { type: 'affirm', text: `기다리는 것은 연습하면 점점 더 쉬워질 수 있습니다.` },
+      { type: 'desc', text: `차례가 오면 ${n}도 할 수 있습니다.` },
+      { type: 'affirm', text: `차례를 기다리는 것은 괜찮은 일입니다.` },
+    ]
+  },
+  {
+    id: 'ask-help', icon: '🙋', name: '도움 요청하기',
+    desc: '어려운 과제나 상황에서 적절히 도움을 요청하는 상황',
+    fn: '회피/탈출',
+    gen: (n) => [
+      { type: 'desc', text: `학교에서 공부를 할 때 어려운 것이 있을 수 있습니다.` },
+      { type: 'desc', text: `모르는 것이 있는 것은 자연스러운 일입니다.` },
+      { type: 'persp', text: `어려운 문제를 만나면 답답하거나 화가 날 수 있습니다.` },
+      { type: 'desc', text: `그럴 때 선생님이나 친구에게 도움을 요청할 수 있습니다.` },
+      { type: 'coach', text: `${n}은(는) 어려울 때 손을 들거나 "도와주세요"라고 말해 볼 수 있습니다.` },
+      { type: 'coach', text: `도움 요청 카드를 선생님 책상 위에 올려놓는 방법을 사용해 볼 수도 있습니다.` },
+      { type: 'persp', text: `선생님은 ${n}이(가) 도움을 요청하면 기꺼이 도와주려고 합니다.` },
+      { type: 'desc', text: `도움을 받으면 어려운 문제도 해결할 수 있습니다.` },
+      { type: 'affirm', text: `도움을 요청하는 것은 용기 있는 행동입니다.` },
+      { type: 'affirm', text: `${n}은(는) 도움을 요청하는 연습을 하고 있습니다.` },
+    ]
+  },
+  {
+    id: 'transition', icon: '🔄', name: '활동 전환하기',
+    desc: '하던 활동을 멈추고 다음 활동으로 넘어가는 상황',
+    fn: '회피/탈출 / 실물획득',
+    gen: (n) => [
+      { type: 'desc', text: `학교에서는 하루 동안 여러 가지 활동을 합니다.` },
+      { type: 'desc', text: `한 가지 활동이 끝나면 다음 활동으로 바뀝니다.` },
+      { type: 'desc', text: `좋아하는 활동이 끝나야 할 때도 있습니다.` },
+      { type: 'persp', text: `좋아하는 것을 그만두어야 할 때 아쉽거나 속상한 마음이 들 수 있습니다.` },
+      { type: 'desc', text: `이런 마음이 드는 것은 자연스러운 일입니다.` },
+      { type: 'coach', text: `${n}은(는) 선생님이 "정리하세요"라고 하면 하던 것을 천천히 멈추어 볼 수 있습니다.` },
+      { type: 'coach', text: `다음 활동이 무엇인지 일과표를 확인해 볼 수 있습니다.` },
+      { type: 'persp', text: `선생님과 친구들은 ${n}이(가) 잘 전환하면 함께 활동할 수 있어서 좋다고 느낍니다.` },
+      { type: 'affirm', text: `활동이 바뀌어도 나중에 좋아하는 활동을 다시 할 수 있는 시간이 있습니다.` },
+      { type: 'affirm', text: `${n}은(는) 활동을 바꾸는 연습을 하고 있고, 점점 나아지고 있습니다.` },
+    ]
+  },
+  {
+    id: 'gentle-body', icon: '🤝', name: '친구 존중하기 (신체)',
+    desc: '친구를 때리거나 밀지 않고 부드러운 몸을 사용하는 상황',
+    fn: '관심끌기 / 감각자극',
+    gen: (n) => [
+      { type: 'desc', text: `학교에는 많은 친구들이 함께 있습니다.` },
+      { type: 'desc', text: `친구들과 가까이 있을 때 몸이 부딪힐 수 있습니다.` },
+      { type: 'persp', text: `친구를 세게 만지거나 밀면 친구는 아프거나 무섭다고 느낄 수 있습니다.` },
+      { type: 'persp', text: `친구가 아프면 같이 놀고 싶지 않다고 생각할 수 있습니다.` },
+      { type: 'desc', text: `사람들은 서로의 몸을 부드럽게 대합니다.` },
+      { type: 'coach', text: `${n}은(는) 친구 옆을 지나갈 때 천천히 걸어 볼 수 있습니다.` },
+      { type: 'coach', text: `친구에게 이야기하고 싶을 때 어깨를 가볍게 톡톡 치거나 이름을 불러 볼 수 있습니다.` },
+      { type: 'persp', text: `부드럽게 하면 친구들은 안전하다고 느끼고 ${n}과(와) 같이 놀고 싶어 합니다.` },
+      { type: 'affirm', text: `부드러운 몸을 쓰는 것은 연습할 수 있는 기술입니다.` },
+      { type: 'affirm', text: `${n}은(는) 친구들과 안전하게 지내는 방법을 배우고 있습니다.` },
+    ]
+  },
+  {
+    id: 'loud-voice', icon: '🔊', name: '목소리 크기 조절',
+    desc: '상황에 맞는 목소리 크기를 사용하는 상황',
+    fn: '감각자극 / 관심끌기',
+    gen: (n) => [
+      { type: 'desc', text: `사람들은 장소에 따라 다른 크기의 목소리를 사용합니다.` },
+      { type: 'desc', text: `교실에서는 보통 작은 목소리나 보통 목소리를 사용합니다.` },
+      { type: 'desc', text: `운동장에서는 큰 목소리를 사용해도 괜찮습니다.` },
+      { type: 'persp', text: `교실에서 큰 목소리를 내면 친구들이 깜짝 놀라거나 집중하기 어려울 수 있습니다.` },
+      { type: 'persp', text: `선생님은 교실에서 작은 목소리를 쓰면 고맙다고 느낍니다.` },
+      { type: 'coach', text: `${n}은(는) 교실에서 이야기할 때 작은 목소리로 말해 볼 수 있습니다.` },
+      { type: 'desc', text: `작은 목소리란 옆에 있는 사람만 들을 수 있는 크기입니다.` },
+      { type: 'coach', text: `큰 소리를 내고 싶을 때는 "운동장에서 하자"라고 스스로에게 말해 볼 수 있습니다.` },
+      { type: 'affirm', text: `목소리 크기를 조절하는 것은 연습하면 점점 잘할 수 있습니다.` },
+      { type: 'affirm', text: `${n}은(는) 어디에서 어떤 목소리를 쓰는지 배우고 있습니다.` },
+    ]
+  },
+  {
+    id: 'special-room', icon: '🏫', name: '특별실 이용하기',
+    desc: '음악실, 미술실, 체육관 등 특별실에서 적절히 행동하는 상황',
+    fn: '회피/탈출 / 감각자극',
+    gen: (n) => [
+      { type: 'desc', text: `학교에는 교실 말고도 다른 공간이 있습니다.` },
+      { type: 'desc', text: `음악실, 미술실, 체육관, 컴퓨터실 같은 곳을 특별실이라고 합니다.` },
+      { type: 'desc', text: `특별실마다 사용하는 도구와 규칙이 다릅니다.` },
+      { type: 'persp', text: `특별실의 새로운 도구나 환경이 낯설게 느껴질 수 있습니다. 이것은 자연스러운 일입니다.` },
+      { type: 'coach', text: `${n}은(는) 특별실에 도착하면 먼저 선생님의 안내를 들어 볼 수 있습니다.` },
+      { type: 'desc', text: `특별실에서는 선생님이 알려주는 도구만 사용합니다.` },
+      { type: 'coach', text: `다른 도구가 만져 보고 싶으면 "이거 만져 봐도 돼요?"라고 물어볼 수 있습니다.` },
+      { type: 'persp', text: `규칙을 지키면 선생님은 안심하고, 친구들도 편안하게 활동할 수 있습니다.` },
+      { type: 'desc', text: `특별실 활동이 끝나면 도구를 정리하고 교실로 돌아갑니다.` },
+      { type: 'affirm', text: `${n}은(는) 여러 특별실에서 지내는 방법을 배우고 있습니다.` },
+    ]
+  },
+  {
+    id: 'lunchtime', icon: '🍽', name: '급식 시간',
+    desc: '급식실에서 적절히 행동하는 상황',
+    fn: '감각자극 / 회피/탈출',
+    gen: (n) => [
+      { type: 'desc', text: `학교에서는 점심시간에 급식실에서 밥을 먹습니다.` },
+      { type: 'desc', text: `급식실에는 많은 친구들이 함께 있어서 소리가 클 수 있습니다.` },
+      { type: 'persp', text: `시끄럽거나 냄새가 강하면 불편하다고 느끼는 사람도 있습니다.` },
+      { type: 'affirm', text: `불편한 느낌이 드는 것은 자연스러운 일입니다.` },
+      { type: 'coach', text: `${n}은(는) 소리가 너무 크게 느껴지면 귀마개를 사용해 볼 수 있습니다.` },
+      { type: 'desc', text: `자기 자리에 앉아서 먹고, 다 먹으면 식판을 정리합니다.` },
+      { type: 'coach', text: `먹기 싫은 반찬이 있으면 "이건 안 먹을래요"라고 조용히 말해 볼 수 있습니다.` },
+      { type: 'persp', text: `자리에 앉아서 먹으면 선생님은 안심합니다.` },
+      { type: 'desc', text: `급식 시간이 끝나면 교실로 돌아갑니다.` },
+      { type: 'affirm', text: `${n}은(는) 급식 시간을 잘 보내는 방법을 배우고 있습니다.` },
+    ]
+  },
+  {
+    id: 'losing-play', icon: '🎲', name: '놀이에서 지기',
+    desc: '놀이에서 졌을 때 적절히 반응하는 상황',
+    fn: '실물획득 / 관심끌기',
+    gen: (n) => [
+      { type: 'desc', text: `친구들과 놀이를 하면 이길 때도 있고 질 때도 있습니다.` },
+      { type: 'desc', text: `모든 사람이 항상 이기는 것은 아닙니다.` },
+      { type: 'persp', text: `놀이에서 지면 속상하거나 화가 나는 마음이 들 수 있습니다.` },
+      { type: 'affirm', text: `이런 마음이 드는 것은 자연스러운 일입니다.` },
+      { type: 'persp', text: `이긴 친구는 기분이 좋을 수 있습니다. 친구의 기쁨을 함께 나누면 좋아합니다.` },
+      { type: 'coach', text: `${n}은(는) 놀이에서 지면 "잘했어" 또는 "다음에 다시 하자"라고 말해 볼 수 있습니다.` },
+      { type: 'coach', text: `속상한 마음이 클 때는 잠깐 심호흡을 해 볼 수 있습니다.` },
+      { type: 'persp', text: `지고 나서도 침착하게 행동하면 친구들은 ${n}과(와) 또 놀고 싶어 합니다.` },
+      { type: 'desc', text: `다음에 놀이를 하면 이길 기회가 또 있습니다.` },
+      { type: 'affirm', text: `지는 것을 받아들이는 연습은 점점 쉬워질 수 있습니다.` },
+    ]
+  },
+  {
+    id: 'spitting', icon: '💧', name: '침 뱉지 않기',
+    desc: '침을 뱉는 행동 대신 적절한 행동을 하는 상황',
+    fn: '감각자극 / 관심끌기',
+    gen: (n) => [
+      { type: 'desc', text: `사람의 입 안에는 침(타액)이 있습니다.` },
+      { type: 'desc', text: `침은 보통 입 안에 있거나 삼킵니다.` },
+      { type: 'persp', text: `다른 사람에게 침을 뱉으면 그 사람은 불쾌하고 속상하다고 느낍니다.` },
+      { type: 'persp', text: `바닥이나 물건에 침을 뱉으면 주변 사람들이 불편해합니다.` },
+      { type: 'desc', text: `학교에서는 침을 뱉지 않습니다.` },
+      { type: 'coach', text: `${n}은(는) 침을 뱉고 싶은 느낌이 들면 침을 삼켜 볼 수 있습니다.` },
+      { type: 'coach', text: `입에 뭔가 느껴지면 물을 마시거나 휴지를 사용해 볼 수 있습니다.` },
+      { type: 'persp', text: `침을 뱉지 않으면 친구들과 선생님은 편안하게 느낍니다.` },
+      { type: 'affirm', text: `침을 삼키는 것은 연습할 수 있는 기술입니다.` },
+      { type: 'affirm', text: `${n}은(는) 입을 깨끗하게 관리하는 방법을 배우고 있습니다.` },
+    ]
+  },
+  {
+    id: 'refuse', icon: '🚫', name: '거절 수용하기',
+    desc: '"안 돼"를 들었을 때 적절히 반응하는 상황',
+    fn: '실물획득',
+    gen: (n) => [
+      { type: 'desc', text: `사람들은 무언가를 하고 싶거나 갖고 싶을 때가 있습니다.` },
+      { type: 'desc', text: `하지만 원하는 것을 항상 바로 할 수 있는 것은 아닙니다.` },
+      { type: 'desc', text: `선생님이나 부모님이 "지금은 안 돼"라고 말할 때가 있습니다.` },
+      { type: 'persp', text: `"안 돼"를 들으면 실망하거나 화가 날 수 있습니다. 이 마음은 자연스러운 것입니다.` },
+      { type: 'persp', text: `어른들이 "안 돼"라고 하는 것은 지금 그것이 어렵거나 위험하기 때문입니다.` },
+      { type: 'coach', text: `${n}은(는) "안 돼"를 들으면 "네, 알겠습니다"라고 말해 볼 수 있습니다.` },
+      { type: 'coach', text: `속상하면 심호흡을 하거나 다른 활동을 찾아 볼 수 있습니다.` },
+      { type: 'desc', text: `"지금은 안 돼"라고 해도 나중에 할 수 있는 경우도 있습니다.` },
+      { type: 'coach', text: `"그러면 언제 할 수 있어요?"라고 물어볼 수도 있습니다.` },
+      { type: 'affirm', text: `"안 돼"를 받아들이는 것은 연습하면 점점 쉬워질 수 있습니다.` },
+    ]
+  },
+  {
+    id: 'elopement', icon: '🚧', name: '학교 안에 있기 (교출)',
+    desc: '학교 밖으로 나가지 않고 학교 안에서 안전하게 지내는 상황',
+    fn: '회피/탈출 / 감각자극',
+    gen: (n) => [
+      { type: 'desc', text: `학교에는 건물과 운동장이 있고, 그 둘레에는 울타리(담장)가 있습니다.` },
+      { type: 'desc', text: `학생들은 수업 시간과 쉬는 시간에 학교 안에서 지냅니다.` },
+      { type: 'desc', text: `학교 밖에는 차가 다니는 도로와 여러 위험한 것들이 있습니다.` },
+      { type: 'persp', text: `때때로 교실이나 학교가 답답하거나 힘들게 느껴질 수 있습니다. 이런 마음은 자연스러운 것입니다.` },
+      { type: 'persp', text: `${n}이(가) 학교 밖으로 나가면 선생님과 부모님은 매우 걱정합니다.` },
+      { type: 'persp', text: `선생님은 ${n}이(가) 안전한지 확인할 수 없어서 불안합니다.` },
+      { type: 'desc', text: `밖에 나가고 싶은 마음이 들 때 할 수 있는 다른 방법이 있습니다.` },
+      { type: 'coach', text: `${n}은(는) 힘들 때 선생님에게 "밖에 나가고 싶어요"라고 말해 볼 수 있습니다.` },
+      { type: 'coach', text: `교실이 답답할 때 쉼 공간에서 잠깐 쉬는 것을 요청해 볼 수 있습니다.` },
+      { type: 'desc', text: `선생님이 허락하면 선생님과 함께 운동장이나 복도를 걸을 수 있습니다.` },
+      { type: 'affirm', text: `학교 안에는 ${n}이(가) 안전하게 쉴 수 있는 장소가 있습니다.` },
+      { type: 'affirm', text: `${n}은(는) 학교 안에서 안전하게 지내는 방법을 배우고 있습니다.` },
+    ]
+  },
+  {
+    id: 'accidental-bump', icon: '💥', name: '실수로 부딪혔을 때',
+    desc: '친구가 의도 없이 부딪혔을 때 적절히 반응하는 상황',
+    fn: '감각자극 / 관심끌기',
+    gen: (n) => [
+      { type: 'desc', text: `학교에는 많은 사람들이 함께 지내기 때문에 좁은 곳도 있습니다.` },
+      { type: 'desc', text: `복도, 교실, 급식실 같은 곳에서 사람들이 지나다니다 보면 몸이 부딪힐 수 있습니다.` },
+      { type: 'desc', text: `대부분의 부딪힘은 실수입니다. 일부러 한 것이 아닙니다.` },
+      { type: 'persp', text: `실수로 부딪힌 친구도 당황하거나 미안하다고 느낄 수 있습니다.` },
+      { type: 'persp', text: `부딪히면 아프거나 깜짝 놀랄 수 있습니다. 이것은 자연스러운 반응입니다.` },
+      { type: 'affirm', text: `놀라거나 불편한 느낌이 드는 것은 괜찮습니다.` },
+      { type: 'coach', text: `${n}은(는) 부딪혔을 때 먼저 "실수인가?"라고 생각해 볼 수 있습니다.` },
+      { type: 'desc', text: `실수로 부딪혔을 때 사람들은 보통 "괜찮아" 또는 "아, 미안"이라고 말합니다.` },
+      { type: 'coach', text: `아프면 선생님에게 "친구가 부딪혀서 아파요"라고 말해 볼 수 있습니다.` },
+      { type: 'persp', text: `침착하게 반응하면 친구는 고맙다고 느끼고, 선생님도 안심합니다.` },
+      { type: 'affirm', text: `실수와 일부러 한 것을 구별하는 것은 연습하면 점점 잘할 수 있습니다.` },
+    ]
+  },
+  {
+    id: 'attention-seeking', icon: '👀', name: '적절하게 관심 받기',
+    desc: '부적절한 행동 대신 적절한 방법으로 관심을 받는 상황',
+    fn: '관심끌기',
+    gen: (n) => [
+      { type: 'desc', text: `사람들은 다른 사람의 관심을 받고 싶을 때가 있습니다.` },
+      { type: 'desc', text: `관심을 받고 싶은 마음은 누구에게나 있는 자연스러운 마음입니다.` },
+      { type: 'affirm', text: `${n}이(가) 관심을 받고 싶은 것은 당연한 일입니다.` },
+      { type: 'desc', text: `관심을 받는 방법에는 여러 가지가 있습니다.` },
+      { type: 'persp', text: `큰 소리를 내거나 물건을 던지면 주변 사람들은 놀라거나 불편하다고 느낍니다.` },
+      { type: 'persp', text: `그런 행동을 하면 선생님은 걱정이 되고, 친구들은 무섭다고 느낄 수 있습니다.` },
+      { type: 'desc', text: `사람들이 좋아하는 관심 받기 방법이 있습니다.` },
+      { type: 'coach', text: `${n}은(는) 선생님에게 이야기하고 싶을 때 손을 들거나 "선생님"이라고 불러 볼 수 있습니다.` },
+      { type: 'coach', text: `친구에게 이야기하고 싶을 때 "같이 놀자" 또는 "이것 봐"라고 말해 볼 수 있습니다.` },
+      { type: 'persp', text: `적절하게 말을 걸면 선생님과 친구들은 기꺼이 ${n}의 이야기를 들으려고 합니다.` },
+      { type: 'affirm', text: `적절하게 관심을 받는 것은 연습할 수 있는 기술입니다.` },
+      { type: 'affirm', text: `${n}은(는) 좋은 방법으로 관심을 받는 연습을 하고 있습니다.` },
+    ]
+  },
+  {
+    id: 'play-skills', icon: '🧩', name: '적절한 놀이 기술',
+    desc: '친구들과 놀이할 때 적절한 방법으로 참여하는 상황',
+    fn: '관심끌기 / 실물획득',
+    gen: (n) => [
+      { type: 'desc', text: `쉬는 시간이나 점심시간에 친구들과 놀이를 합니다.` },
+      { type: 'desc', text: `놀이에는 규칙이 있습니다. 규칙은 모든 사람이 즐겁게 놀기 위해 있습니다.` },
+      { type: 'persp', text: `친구들은 규칙을 지키면서 노는 것을 좋아합니다.` },
+      { type: 'desc', text: `놀이를 시작하려면 먼저 친구들에게 "나도 같이 해도 돼?"라고 물어봅니다.` },
+      { type: 'coach', text: `${n}은(는) 놀이에 들어가고 싶을 때 "같이 하자" 또는 "나도 끼워 줘"라고 말해 볼 수 있습니다.` },
+      { type: 'desc', text: `놀이 중에는 차례를 지키고, 친구의 이야기도 들어 줍니다.` },
+      { type: 'coach', text: `내 차례가 아닐 때는 기다리면서 친구가 하는 것을 지켜볼 수 있습니다.` },
+      { type: 'persp', text: `차례를 지키고 규칙을 따르면 친구들은 ${n}과(와) 계속 놀고 싶어 합니다.` },
+      { type: 'coach', text: `놀이가 재미없거나 힘들면 "나는 다른 거 할래"라고 말하고 다른 놀이를 찾아볼 수 있습니다.` },
+      { type: 'affirm', text: `친구들과 함께 노는 방법은 연습하면 점점 더 잘할 수 있습니다.` },
+      { type: 'affirm', text: `${n}은(는) 친구들과 즐겁게 노는 방법을 배우고 있습니다.` },
+    ]
+  },
+  {
+    desc: '직접 처음부터 작성합니다',
+    fn: '-',
+    gen: (n) => [
+      { type: 'desc', text: '' },
+      { type: 'desc', text: '' },
+      { type: 'persp', text: '' },
+      { type: 'coach', text: '' },
+      { type: 'affirm', text: '' },
+    ]
+  },
+];
+
+// Current story state
+let sentences = [];
+let currentTemplate = null;
+let selectedLevel = 3;
+
+function selectLevel(lv) {
+  selectedLevel = lv;
+  document.querySelectorAll('.level-card').forEach(c => c.classList.toggle('selected', parseInt(c.dataset.level) === lv));
+}
+
+// Level 1 & 2 data for each template
+// 원칙: 첫 문장에 상황 맥락, 짧더라도 완결된 의미 단위, 뜬금없는 시작 금지
+const LEVEL_DATA = {
+  'wait-turn': {
+    1: (n) => [
+      { type: 'desc', text: `학교에서 활동할 때 차례가 있어요.`, img: true },
+      { type: 'desc', text: `한 명씩 해요.`, img: true },
+      { type: 'coach', text: `${n}도 앉아서 기다려 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `기다리면 내 차례가 와요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `학교에서 활동할 때 차례가 있어요.` },
+      { type: 'desc', text: `모두 한꺼번에 할 수 없어서 한 명씩 해요.` },
+      { type: 'persp', text: `차례를 지키면 친구들이 좋아해요.` },
+      { type: 'coach', text: `${n}은(는) 손을 무릎에 놓고 기다려 볼 수 있어요.` },
+      { type: 'desc', text: `기다리면 내 차례가 와요.` },
+      { type: 'affirm', text: `기다리는 건 연습하면 점점 쉬워져요.` },
+    ],
+  },
+  'ask-help': {
+    1: (n) => [
+      { type: 'desc', text: `공부할 때 어려울 수 있어요.`, img: true },
+      { type: 'coach', text: `${n}은(는) "도와주세요" 말해 볼 수 있어요.`, img: true },
+      { type: 'persp', text: `선생님이 도와줘요.`, img: true },
+      { type: 'affirm', text: `도움을 요청하면 괜찮아요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `공부할 때 모르는 게 있을 수 있어요.` },
+      { type: 'persp', text: `어려우면 답답한 마음이 들 수 있어요.` },
+      { type: 'coach', text: `${n}은(는) 손을 들고 "도와주세요" 말해 볼 수 있어요.` },
+      { type: 'persp', text: `선생님은 기꺼이 도와주려고 해요.` },
+      { type: 'desc', text: `도움을 받으면 문제를 풀 수 있어요.` },
+      { type: 'affirm', text: `도움을 요청하는 건 용기 있는 거예요.` },
+    ],
+  },
+  'transition': {
+    1: (n) => [
+      { type: 'desc', text: `학교에서 활동이 바뀔 때가 있어요.`, img: true },
+      { type: 'persp', text: `좋아하는 게 끝나면 아쉬워요.`, img: true },
+      { type: 'coach', text: `${n}은(는) 하던 걸 멈추고 다음 걸 해 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `좋아하는 건 나중에 또 할 수 있어요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `학교에서는 하루에 여러 활동을 해요.` },
+      { type: 'desc', text: `좋아하는 활동도 끝날 때가 있어요.` },
+      { type: 'persp', text: `그만두어야 할 때 아쉬운 마음이 들 수 있어요.` },
+      { type: 'coach', text: `${n}은(는) "정리하세요" 하면 천천히 멈춰 볼 수 있어요.` },
+      { type: 'coach', text: `일과표를 보면 다음에 뭘 하는지 알 수 있어요.` },
+      { type: 'affirm', text: `좋아하는 활동은 나중에 또 할 수 있어요.` },
+    ],
+  },
+  'gentle-body': {
+    1: (n) => [
+      { type: 'desc', text: `학교에서 친구 몸을 부드럽게 해요.`, img: true },
+      { type: 'persp', text: `세게 하면 친구가 아파요.`, img: true },
+      { type: 'coach', text: `${n}은(는) 살살 해 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `부드러우면 친구가 같이 놀고 싶어 해요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `학교에서 친구들과 가까이 있을 때가 있어요.` },
+      { type: 'persp', text: `세게 밀거나 치면 친구가 아프고 무서워요.` },
+      { type: 'persp', text: `아프면 같이 놀기 싫다고 느껴요.` },
+      { type: 'coach', text: `${n}은(는) 천천히 걷고 살살 해 볼 수 있어요.` },
+      { type: 'coach', text: `말하고 싶으면 이름을 불러 볼 수 있어요.` },
+      { type: 'affirm', text: `부드럽게 하면 친구가 같이 놀고 싶어 해요.` },
+    ],
+  },
+  'loud-voice': {
+    1: (n) => [
+      { type: 'desc', text: `교실에서는 작은 목소리로 말해요.`, img: true },
+      { type: 'desc', text: `운동장에서는 큰 목소리 괜찮아요.`, img: true },
+      { type: 'coach', text: `${n}은(는) 교실에서 작게 말해 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `연습하면 점점 잘할 수 있어요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `장소마다 맞는 목소리 크기가 있어요.` },
+      { type: 'desc', text: `교실에서는 작은 목소리, 운동장에서는 큰 목소리예요.` },
+      { type: 'persp', text: `교실에서 크게 말하면 친구들이 깜짝 놀라요.` },
+      { type: 'coach', text: `${n}은(는) 교실에서 옆 사람만 듣게 말해 볼 수 있어요.` },
+      { type: 'affirm', text: `목소리 크기 조절은 연습하면 잘할 수 있어요.` },
+    ],
+  },
+  'special-room': {
+    1: (n) => [
+      { type: 'desc', text: `학교에 음악실, 체육관 같은 특별실이 있어요.`, img: true },
+      { type: 'coach', text: `특별실에 가면 선생님 말씀을 먼저 들어요.`, img: true },
+      { type: 'coach', text: `${n}은(는) 만져 보고 싶으면 물어볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `끝나면 정리하고 교실로 가요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `학교에 음악실, 미술실, 체육관 같은 특별실이 있어요.` },
+      { type: 'desc', text: `특별실마다 도구와 규칙이 달라요.` },
+      { type: 'coach', text: `${n}은(는) 도착하면 선생님 안내를 먼저 들어 볼 수 있어요.` },
+      { type: 'coach', text: `다른 도구가 궁금하면 "만져도 돼요?" 물어볼 수 있어요.` },
+      { type: 'persp', text: `규칙을 지키면 선생님이 안심하고 친구들도 편해요.` },
+      { type: 'affirm', text: `${n}은(는) 특별실에서 지내는 방법을 배우고 있어요.` },
+    ],
+  },
+  'lunchtime': {
+    1: (n) => [
+      { type: 'desc', text: `점심시간에 급식실에서 밥을 먹어요.`, img: true },
+      { type: 'coach', text: `${n}은(는) 자리에 앉아서 먹어 볼 수 있어요.`, img: true },
+      { type: 'coach', text: `싫은 반찬은 "안 먹을래요" 말해 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `다 먹으면 식판을 정리해요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `점심시간에 급식실에서 밥을 먹어요.` },
+      { type: 'desc', text: `급식실에 사람이 많아서 소리가 클 수 있어요.` },
+      { type: 'persp', text: `시끄러우면 불편할 수 있어요. 괜찮은 거예요.` },
+      { type: 'coach', text: `${n}은(는) 자리에 앉아서 먹어 볼 수 있어요.` },
+      { type: 'coach', text: `싫은 반찬은 "이건 안 먹을래요" 말해 볼 수 있어요.` },
+      { type: 'affirm', text: `${n}은(는) 급식 시간을 잘 보내는 법을 배우고 있어요.` },
+    ],
+  },
+  'losing-play': {
+    1: (n) => [
+      { type: 'desc', text: `친구와 놀이하면 질 때도 있어요.`, img: true },
+      { type: 'persp', text: `지면 속상한 마음이 들어요.`, img: true },
+      { type: 'coach', text: `${n}은(는) "다음에 또 하자" 말해 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `다음에 놀면 이길 때도 있어요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `친구와 놀이하면 이길 때도 있고 질 때도 있어요.` },
+      { type: 'persp', text: `놀이에서 지면 속상할 수 있어요.` },
+      { type: 'affirm', text: `속상한 건 자연스러운 거예요.` },
+      { type: 'coach', text: `${n}은(는) "잘했어" 또는 "다음에 하자" 말해 볼 수 있어요.` },
+      { type: 'coach', text: `속상하면 심호흡을 해 볼 수 있어요.` },
+      { type: 'affirm', text: `연습하면 점점 쉬워져요.` },
+    ],
+  },
+  'spitting': {
+    1: (n) => [
+      { type: 'desc', text: `입 안에 침이 있으면 삼켜요.`, img: true },
+      { type: 'persp', text: `침을 뱉으면 사람들이 싫어해요.`, img: true },
+      { type: 'coach', text: `${n}은(는) 꿀꺽 삼켜 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `삼키는 건 연습할 수 있어요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `입 안에 침이 있으면 보통 삼켜요.` },
+      { type: 'persp', text: `사람에게 침을 뱉으면 그 사람이 싫어하고 속상해요.` },
+      { type: 'coach', text: `${n}은(는) 뱉고 싶은 느낌이 들면 삼켜 볼 수 있어요.` },
+      { type: 'coach', text: `물을 마시거나 휴지를 써 볼 수도 있어요.` },
+      { type: 'affirm', text: `침 삼키는 건 연습하면 잘할 수 있어요.` },
+    ],
+  },
+  'refuse': {
+    1: (n) => [
+      { type: 'desc', text: `하고 싶어도 "안 돼" 할 때가 있어요.`, img: true },
+      { type: 'persp', text: `속상할 수 있어요. 괜찮아요.`, img: true },
+      { type: 'coach', text: `${n}은(는) "네" 하고 기다려 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `나중에 할 수 있을 때도 있어요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `하고 싶은 게 있어도 "안 돼" 할 때가 있어요.` },
+      { type: 'persp', text: `"안 돼" 들으면 속상할 수 있어요. 자연스러운 거예요.` },
+      { type: 'coach', text: `${n}은(는) "네, 알겠어요" 말해 볼 수 있어요.` },
+      { type: 'coach', text: `속상하면 다른 활동을 찾아 볼 수 있어요.` },
+      { type: 'desc', text: `지금은 안 돼도 나중에 할 수 있을 때가 있어요.` },
+      { type: 'affirm', text: `"안 돼"를 받아들이는 건 연습하면 쉬워져요.` },
+    ],
+  },
+  'elopement': {
+    1: (n) => [
+      { type: 'desc', text: `${n}은(는) 학교 안에서 지내요.`, img: true },
+      { type: 'desc', text: `학교 밖에는 차가 다녀서 위험해요.`, img: true },
+      { type: 'coach', text: `나가고 싶으면 선생님에게 말해 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `학교 안에 쉴 수 있는 곳이 있어요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `${n}은(는) 수업 시간과 쉬는 시간에 학교 안에서 지내요.` },
+      { type: 'desc', text: `학교 밖에는 차가 다녀서 위험할 수 있어요.` },
+      { type: 'persp', text: `교실이 답답할 때가 있어요. 자연스러운 거예요.` },
+      { type: 'coach', text: `${n}은(는) 힘들 때 "나가고 싶어요" 말해 볼 수 있어요.` },
+      { type: 'coach', text: `쉼 공간에서 잠깐 쉬는 것을 요청해 볼 수 있어요.` },
+      { type: 'affirm', text: `학교 안에 ${n}이(가) 쉴 수 있는 안전한 곳이 있어요.` },
+    ],
+  },
+  'accidental-bump': {
+    1: (n) => [
+      { type: 'desc', text: `학교에서 지나다니다 부딪힐 때가 있어요.`, img: true },
+      { type: 'desc', text: `대부분 실수예요. 일부러 한 게 아니에요.`, img: true },
+      { type: 'coach', text: `${n}은(는) "괜찮아" 말해 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `아프면 선생님에게 말하면 돼요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `학교에 사람이 많아서 지나가다 부딪힐 수 있어요.` },
+      { type: 'desc', text: `대부분 실수예요. 일부러 한 게 아니에요.` },
+      { type: 'persp', text: `부딪힌 친구도 미안하다고 느껴요.` },
+      { type: 'persp', text: `부딪히면 아프거나 놀랄 수 있어요. 자연스러운 거예요.` },
+      { type: 'coach', text: `${n}은(는) "실수인가?" 생각해 보고 "괜찮아" 말해 볼 수 있어요.` },
+      { type: 'affirm', text: `아프면 선생님에게 말하면 돼요.` },
+    ],
+  },
+  'attention-seeking': {
+    1: (n) => [
+      { type: 'desc', text: `${n}은(는) 관심받고 싶을 때가 있어요.`, img: true },
+      { type: 'coach', text: `선생님한테 "선생님!" 불러 볼 수 있어요.`, img: true },
+      { type: 'coach', text: `친구한테 "같이 놀자" 말해 볼 수 있어요.`, img: true },
+      { type: 'affirm', text: `말로 하면 들어줘요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `사람들은 다른 사람 관심을 받고 싶을 때가 있어요.` },
+      { type: 'affirm', text: `${n}이(가) 관심받고 싶은 건 당연한 거예요.` },
+      { type: 'persp', text: `큰 소리를 내거나 물건을 던지면 사람들이 놀라요.` },
+      { type: 'coach', text: `${n}은(는) 손을 들거나 "선생님" 불러 볼 수 있어요.` },
+      { type: 'coach', text: `친구에게 "같이 놀자" 말해 볼 수 있어요.` },
+      { type: 'persp', text: `말로 하면 기꺼이 들어줘요.` },
+      { type: 'affirm', text: `좋은 방법으로 관심 받는 걸 배우고 있어요.` },
+    ],
+  },
+  'play-skills': {
+    1: (n) => [
+      { type: 'desc', text: `쉬는 시간에 친구와 놀이해요.`, img: true },
+      { type: 'coach', text: `${n}은(는) "같이 하자" 말해 볼 수 있어요.`, img: true },
+      { type: 'coach', text: `내 차례 아닐 때는 기다려요.`, img: true },
+      { type: 'affirm', text: `같이 놀면 즐거워요.`, img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: `쉬는 시간에 친구들과 놀이를 해요.` },
+      { type: 'desc', text: `놀이에는 규칙이 있어요. 모두 즐겁게 놀려고 있는 거예요.` },
+      { type: 'coach', text: `${n}은(는) 같이 놀고 싶으면 "나도 끼워 줘" 말해 볼 수 있어요.` },
+      { type: 'desc', text: `내 차례가 아닐 때는 기다려요.` },
+      { type: 'persp', text: `차례를 지키면 친구들이 또 놀고 싶어 해요.` },
+      { type: 'affirm', text: `같이 노는 방법은 연습하면 점점 잘해요.` },
+    ],
+  },
+  'blank': {
+    1: (n) => [
+      { type: 'desc', text: '', img: true },
+      { type: 'coach', text: '', img: true },
+      { type: 'affirm', text: '', img: true },
+    ],
+    2: (n) => [
+      { type: 'desc', text: '' },
+      { type: 'persp', text: '' },
+      { type: 'coach', text: '' },
+      { type: 'affirm', text: '' },
+    ],
+  },
+};
+
+// ═══════════════════════════════════════
+// TAB NAVIGATION
+// ═══════════════════════════════════════
+function showTab(i) {
+  document.querySelectorAll('.section').forEach((s, idx) => s.classList.toggle('active', idx === i));
+  document.querySelectorAll('.tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+  if (i === 1) renderSentences();
+  if (i === 2) runCriteriaCheck();
+  if (i === 3) renderPreview();
+  if (i === 4) renderSavedList();
+}
+
+// ═══════════════════════════════════════
+// TAB 1: TEMPLATES
+// ═══════════════════════════════════════
+function renderTemplates() {
+  const grid = document.getElementById('tmpl-grid');
+  grid.innerHTML = TEMPLATES.map(t => `
+    <div class="tmpl-card" onclick="selectTemplate('${t.id}')">
+      <div class="tmpl-icon">${t.icon}</div>
+      <div class="tmpl-name">${t.name}</div>
+      <div class="tmpl-desc">${t.desc}</div>
+      ${t.fn !== '-' ? `<div class="tmpl-fn">${t.fn}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function selectTemplate(id) {
+  const tmpl = TEMPLATES.find(t => t.id === id);
+  if (!tmpl) return;
+  const name = document.getElementById('tmpl-name').value.trim() || '○○';
+  currentTemplate = tmpl;
+
+  // Use level-specific data if available
+  if (selectedLevel < 3 && LEVEL_DATA[id] && LEVEL_DATA[id][selectedLevel]) {
+    sentences = LEVEL_DATA[id][selectedLevel](name).map((s, i) => ({ ...s, id: Date.now() + i }));
+  } else {
+    sentences = tmpl.gen(name).map((s, i) => ({ ...s, id: Date.now() + i }));
+  }
+
+  const levelNames = { 1: ' (그림중심)', 2: ' (짧은문장)', 3: '' };
+  document.getElementById('story-title').value = tmpl.name + levelNames[selectedLevel];
+  
+  document.querySelectorAll('.tmpl-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  showTab(1);
+}
+
+// ═══════════════════════════════════════
+// TAB 2: SENTENCE EDITOR
+// ═══════════════════════════════════════
+function renderSentences() {
+  const box = document.getElementById('sentence-list');
+  box.innerHTML = sentences.map((s, i) => `
+    <div class="sentence-row" data-idx="${i}" style="flex-wrap:wrap">
+      <div style="display:flex;gap:8px;align-items:flex-start;width:100%">
+        <div class="s-num">${i + 1}</div>
+        <span class="sent-type ${TYPES[s.type].class}">${TYPES[s.type].label}</span>
+        <textarea oninput="updateSentence(${i}, this.value)" onfocus="autoResize(this)" oninput="autoResize(this)">${s.text}</textarea>
+        <select onchange="changeSentenceType(${i}, this.value)" style="width:75px">
+          ${Object.entries(TYPES).map(([k, v]) => `<option value="${k}" ${k === s.type ? 'selected' : ''}>${v.label}</option>`).join('')}
+        </select>
+        <span class="s-del" onclick="deleteSentence(${i})">×</span>
+      </div>
+      <div style="width:100%;margin-left:32px;margin-top:4px">
+        ${s.imgData 
+          ? `<div style="position:relative;display:inline-block">
+              <img src="${s.imgData}" style="max-width:100%;max-height:120px;border-radius:8px;border:1px solid var(--border)">
+              <span onclick="removeImage(${i})" style="position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer">×</span>
+            </div>`
+          : `<div class="img-placeholder" onclick="triggerImageUpload(${i})">
+              ${s.img ? '🖼 클릭하여 그림/사진 추가 (필수)' : '📷 클릭하여 사진 추가 (선택)'}
+            </div>`
+        }
+        <input type="file" id="img-input-${i}" accept="image/*" style="display:none" onchange="handleImageUpload(${i}, this)">
+      </div>
+    </div>
+  `).join('');
+
+  box.querySelectorAll('textarea').forEach(autoResize);
+  updateRatioBar();
+}
+
+function triggerImageUpload(i) {
+  document.getElementById(`img-input-${i}`).click();
+}
+
+function handleImageUpload(i, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { alert('2MB 이하 이미지만 가능합니다.'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    sentences[i].imgData = e.target.result;
+    renderSentences();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(i) {
+  delete sentences[i].imgData;
+  renderSentences();
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function updateSentence(i, text) { sentences[i].text = text; }
+function changeSentenceType(i, type) { sentences[i].type = type; renderSentences(); }
+function deleteSentence(i) { sentences.splice(i, 1); renderSentences(); }
+
+function addSentence(type) {
+  sentences.push({ type, text: '', id: Date.now() });
+  renderSentences();
+  // Scroll to new sentence
+  const list = document.getElementById('sentence-list');
+  const last = list.lastElementChild;
+  if (last) { last.scrollIntoView({ behavior: 'smooth' }); last.querySelector('textarea').focus(); }
+}
+
+function updateRatioBar() {
+  const counts = { desc: 0, persp: 0, coach: 0, affirm: 0 };
+  sentences.forEach(s => { if (counts[s.type] !== undefined) counts[s.type]++; });
+  const total = sentences.length || 1;
+
+  const bar = document.getElementById('ratio-bar');
+  const colors = { desc: '#3a7ca5', persp: '#8b6bab', coach: '#c97b3c', affirm: '#d4a843' };
+  const labels = { desc: '설명', persp: '조망', coach: '코칭', affirm: '긍정' };
+
+  bar.innerHTML = Object.entries(counts).map(([k, v]) => {
+    const pct = (v / total * 100);
+    if (pct === 0) return '';
+    return `<div class="ratio-seg" style="width:${pct}%;background:${colors[k]}">${labels[k]} ${v}</div>`;
+  }).join('');
+
+  // Ratio text
+  const descPersp = counts.desc + counts.persp + counts.affirm;
+  const coaching = counts.coach;
+  const ratio = coaching > 0 ? (descPersp / coaching).toFixed(1) : '∞';
+  const pass = coaching === 0 || descPersp / coaching >= 2;
+
+  document.getElementById('ratio-text').innerHTML = 
+    `설명+조망+긍정 : 코칭 = ${descPersp} : ${coaching} (비율 ${ratio}:1) ` +
+    `<span style="color:${pass ? 'var(--ok)' : 'var(--danger)'}">${pass ? '✓ 기준 충족' : '✗ 코칭문 비율 초과 — 설명문/조망문 추가 필요'}</span>`;
+}
+
+// ═══════════════════════════════════════
+// TAB 3: 10.4 CRITERIA CHECK
+// ═══════════════════════════════════════
+function runCriteriaCheck() {
+  const counts = { desc: 0, persp: 0, coach: 0, affirm: 0 };
+  sentences.forEach(s => { if (counts[s.type] !== undefined) counts[s.type]++; });
+  const total = sentences.length;
+  const allText = sentences.map(s => s.text).join(' ');
+  const title = document.getElementById('story-title').value.trim();
+
+  const descPersp = counts.desc + counts.persp + counts.affirm;
+  const coaching = counts.coach;
+  const ratio = coaching > 0 ? descPersp / coaching : Infinity;
+
+  const criteria = [
+    {
+      name: '1. 목표: 정보 공유',
+      desc: '이야기의 목적은 행동 변화가 아닌 정보 공유(이해 증진)여야 합니다.',
+      pass: true, // 구조적 판단 불가 — 사용자 확인 필요
+      note: '자동 판단 불가 — 이야기가 "명령"이 아닌 "정보 제공" 톤인지 직접 확인하세요.'
+    },
+    {
+      name: '2. 설명문:코칭문 비율 ≥ 2:1',
+      desc: '(설명문 + 조망문 + 긍정확인문) : 코칭문 ≥ 2:1',
+      pass: ratio >= 2,
+      note: `현재 비율: ${ratio === Infinity ? '코칭문 0개' : ratio.toFixed(1) + ':1'} (${descPersp}:${coaching})`
+    },
+    {
+      name: '3. 1인칭 또는 3인칭 일관 사용',
+      desc: '학습자 관점(1인칭) 또는 관찰자 관점(3인칭) 중 하나를 일관되게 사용합니다.',
+      pass: true,
+      note: '자동 판단 불가 — 문장 전반의 인칭 일관성을 확인하세요.'
+    },
+    {
+      name: '4. 긍정적 언어 사용',
+      desc: '"하지 마라" 대신 "~할 수 있다"로 표현합니다.',
+      pass: !allText.includes('하지 마') && !allText.includes('하면 안') && !allText.includes('해서는 안'),
+      note: allText.includes('하지 마') || allText.includes('하면 안') || allText.includes('해서는 안')
+        ? '부정적 표현이 발견되었습니다. 긍정적 표현으로 수정하세요.'
+        : '부정적 표현이 발견되지 않았습니다.'
+    },
+    {
+      name: '5. 코칭문에 "~할 수 있다" 표현 사용',
+      desc: '코칭문은 "~해야 한다"가 아닌 "~해 볼 수 있다/~를 시도할 수 있다"로 표현합니다.',
+      pass: sentences.filter(s => s.type === 'coach').every(s => 
+        s.text.includes('볼 수 있') || s.text.includes('할 수 있') || s.text.includes('시도') || s.text.includes('수도 있') || s.text === ''
+      ),
+      note: sentences.filter(s => s.type === 'coach').some(s => 
+        s.text.includes('해야') || s.text.includes('하세요') || s.text.includes('하십시오')
+      ) ? '코칭문에 명령형/의무형 표현이 있습니다.' : '코칭문이 적절한 제안형으로 작성되었습니다.'
+    },
+    {
+      name: '6. 정확한 정보',
+      desc: '이야기에 포함된 정보가 사실에 기반해야 합니다.',
+      pass: true,
+      note: '자동 판단 불가 — 서술된 상황, 규칙, 결과가 사실인지 확인하세요.'
+    },
+    {
+      name: '7. 문장 수 적절성',
+      desc: '학습자의 이해 수준에 맞는 길이여야 합니다.',
+      pass: selectedLevel === 1 ? (total >= 3 && total <= 5) : selectedLevel === 2 ? (total >= 4 && total <= 8) : (total >= 5 && total <= 15),
+      note: `현재 ${total}문장 (Level ${selectedLevel}). ${selectedLevel === 1 ? (total < 3 ? '3문장 이상 필요.' : total > 5 ? '그림중심은 5문장 이하 권장.' : '적절합니다.') : selectedLevel === 2 ? (total < 4 ? '4문장 이상 필요.' : total > 8 ? '짧은문장 수준은 8문장 이하 권장.' : '적절합니다.') : (total < 5 ? '문장을 추가하세요.' : total > 15 ? '문장이 많습니다.' : '적절합니다.')}`
+    },
+    {
+      name: '8. 제목 포함',
+      desc: '이야기에 주제를 반영하는 제목이 있어야 합니다.',
+      pass: title.length > 0,
+      note: title.length > 0 ? `제목: "${title}"` : '제목을 입력하세요.'
+    },
+    {
+      name: '9. 조망문 포함',
+      desc: '다른 사람의 생각, 감정, 반응에 대한 조망문이 포함되어야 합니다.',
+      pass: counts.persp >= 1,
+      note: `조망문 ${counts.persp}개. ${counts.persp === 0 ? '타인의 감정/생각을 다루는 조망문을 추가하세요.' : ''}`
+    },
+    {
+      name: '10. 학습자 강점/안전 확인',
+      desc: '긍정확인문으로 학습자가 안전하고 할 수 있다는 것을 확인합니다.',
+      pass: counts.affirm >= 1,
+      note: `긍정확인문 ${counts.affirm}개. ${counts.affirm === 0 ? '학습자를 안심시키는 긍정확인문을 추가하세요.' : ''}`
+    },
+  ];
+
+  const box = document.getElementById('criteria-list');
+  let passCount = 0;
+  box.innerHTML = criteria.map(c => {
+    if (c.pass) passCount++;
+    return `<div class="criteria-item ${c.pass ? 'criteria-pass' : 'criteria-fail'}">
+      <span class="criteria-icon">${c.pass ? '✅' : '❌'}</span>
+      <div>
+        <div style="font-weight:600">${c.name}</div>
+        <div style="font-size:12px;color:var(--sub)">${c.note}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const summary = document.getElementById('criteria-summary');
+  const pct = Math.round(passCount / criteria.length * 100);
+  summary.innerHTML = `${passCount}/${criteria.length} 항목 충족 (${pct}%) ` +
+    (pct === 100 ? '<span style="color:var(--ok)">✓ 모든 기준 충족!</span>' :
+     pct >= 70 ? '<span style="color:var(--coach)">거의 완성 — 위 항목을 확인하세요</span>' :
+     '<span style="color:var(--danger)">수정이 필요합니다</span>');
+}
+
+// ═══════════════════════════════════════
+// TAB 4: PREVIEW
+// ═══════════════════════════════════════
+function renderPreview() {
+  const title = document.getElementById('story-title').value.trim() || '사회적 이야기';
+  const box = document.getElementById('preview-box');
+  const filledSentences = sentences.filter(s => s.text.trim());
+  
+  box.innerHTML = `
+    <div class="preview-title">${title}</div>
+    ${filledSentences.map(s => `
+      ${s.imgData 
+        ? `<div style="text-align:center;margin:12px 0"><img src="${s.imgData}" style="max-width:80%;max-height:200px;border-radius:8px"></div>` 
+        : (s.img ? '<div class="preview-img-placeholder">🖼 그림/사진 영역</div>' : '')}
+      <div class="preview-sentence">${s.text}</div>
+    `).join('')}
+    <div class="preview-meta">
+      Carol Gray Social Stories™ 10.4 기준 작성<br>
+      만든이: 뜨거운 온도 이노아(특수교사 연구회)<br>
+      작성일: ${new Date().toLocaleDateString('ko-KR')}
+    </div>
+  `;
+}
+
+function exportStoryText() {
+  const title = document.getElementById('story-title').value.trim() || '사회적 이야기';
+  const filledSentences = sentences.filter(s => s.text.trim());
+  const lines = [
+    title,
+    '═'.repeat(30),
+    '',
+    ...filledSentences.map((s, i) => `${s.text}`),
+    '',
+    '─'.repeat(30),
+    `작성일: ${new Date().toLocaleDateString('ko-KR')}`,
+    'Carol Gray Social Stories™ 10.4 기준',
+    '',
+    '── 문장 유형 분석 ──',
+    ...filledSentences.map((s, i) => `[${TYPES[s.type].label}] ${s.text}`),
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `사회적이야기_${title}_${new Date().toISOString().split('T')[0]}.txt`;
+  a.click();
+}
+
+// ═══════════════════════════════════════
+// TAB 5: SAVE/LOAD
+// ═══════════════════════════════════════
+function saveStory() {
+  const title = document.getElementById('story-title').value.trim();
+  if (!title) return alert('제목을 입력하세요.');
+  const stories = LS.get('stories');
+  stories.push({
+    id: Date.now(),
+    title,
+    sentences: JSON.parse(JSON.stringify(sentences)),
+    template: currentTemplate?.id || null,
+    date: new Date().toISOString()
+  });
+  LS.set('stories', stories);
+  alert('저장되었습니다!');
+}
+
+function renderSavedList() {
+  const stories = LS.get('stories');
+  const box = document.getElementById('saved-list');
+  if (!stories.length) { box.innerHTML = '<div class="empty-msg">저장된 이야기가 없습니다.</div>'; return; }
+  
+  box.innerHTML = stories.map(s => {
+    const d = new Date(s.date).toLocaleDateString('ko-KR');
+    return `<div class="saved-item">
+      <div>
+        <strong>${s.title}</strong>
+        <div style="font-size:11px;color:var(--sub)">${d} · ${s.sentences.length}문장</div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-out btn-sm" onclick="loadStory(${s.id})">불러오기</button>
+        <button class="btn btn-out btn-sm" onclick="duplicateStory(${s.id})">복제</button>
+        <span style="color:var(--danger);cursor:pointer;font-size:18px;padding:4px" onclick="deleteStory(${s.id})">×</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadStory(id) {
+  const story = LS.get('stories').find(s => s.id === id);
+  if (!story) return;
+  sentences = JSON.parse(JSON.stringify(story.sentences));
+  document.getElementById('story-title').value = story.title;
+  showTab(1);
+}
+
+function duplicateStory(id) {
+  const stories = LS.get('stories');
+  const orig = stories.find(s => s.id === id);
+  if (!orig) return;
+  stories.push({
+    ...JSON.parse(JSON.stringify(orig)),
+    id: Date.now(),
+    title: orig.title + ' (복사)',
+    date: new Date().toISOString()
+  });
+  LS.set('stories', stories);
+  renderSavedList();
+}
+
+function deleteStory(id) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  LS.set('stories', LS.get('stories').filter(s => s.id !== id));
+  renderSavedList();
+}
+
+function exportAllJSON() {
+  const data = { stories: LS.get('stories') };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `social-stories-backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+}
+
+function importAllJSON() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.stories) { LS.set('stories', data.stories); alert('복원 완료!'); renderSavedList(); }
+      } catch { alert('파일 형식 오류'); }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+renderTemplates();
+
+// ═══════════════════════════════════════
+// BIP 연동: URL 파라미터로 전달받은 정보 적용
+// ═══════════════════════════════════════
+(function applyBIPParams() {
+  const params = new URLSearchParams(location.search);
+  const fromBIP = params.get('from') === 'bip';
+  const student = params.get('student');
+  const functions = params.get('functions');
+  const recommended = params.get('templates');
+
+  // 학생 이름 자동 입력
+  if (student) {
+    const stuInput = document.getElementById('tmpl-name');
+    if (stuInput) stuInput.value = student;
+  }
+
+  // 추천 템플릿 하이라이트 (renderTemplates 재실행으로 구현)
+  if (recommended) {
+    const recList = recommended.split(',').map(s => s.trim()).filter(Boolean);
+    if (recList.length) {
+      // 기존 grid 추가 스타일 주입 + 재렌더링
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.tmpl-card');
+        cards.forEach(c => {
+          const name = c.querySelector('.tmpl-name')?.textContent?.trim();
+          if (recList.some(r => name && (name === r || name.includes(r) || r.includes(name)))) {
+            c.style.boxShadow = '0 0 0 3px #d4a843, 0 4px 12px rgba(212,168,67,.3)';
+            c.style.position = 'relative';
+            if (!c.querySelector('.rec-badge')) {
+              const badge = document.createElement('div');
+              badge.className = 'rec-badge';
+              badge.textContent = '⭐ 추천';
+              badge.style.cssText = 'position:absolute;top:-8px;right:-8px;background:#d4a843;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.2)';
+              c.appendChild(badge);
+            }
+          }
+        });
+      }, 100);
+    }
+  }
+
+  // 돌아가기 배너 표시
+  if (fromBIP) {
+    const banner = document.getElementById('back-banner');
+    if (banner) {
+      banner.style.display = 'flex';
+      const info = document.getElementById('back-banner-info');
+      const bits = [];
+      if (student) bits.push(`학생: ${student}`);
+      if (functions) bits.push(`기능: ${functions.split(',').join(', ')}`);
+      if (info) info.textContent = bits.join(' · ') || '도구를 닫으면 BIP로 돌아갑니다';
+    }
+  }
+})();
+
+// ═══════════════════════════════════════
+// PWA: Service Worker 등록
+// ═══════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

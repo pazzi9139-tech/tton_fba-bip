@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FBA→BIP 데이터 도구</title>
+<meta name="theme-color" content="#3a5334">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FBA-BIP">
+<meta name="description" content="FBA(기능적 행동평가)에서 BIP(행동중재계획)까지, 그리고 사회적 상황이야기 제작까지 — 특수교육 현장 통합 도구">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f5f0;--card:#fff;--border:#e0ddd5;--text:#2c2c2c;--sub:#777;
+  --pri:#4a6741;--pri-l:#e8efe6;--pri-d:#3a5334;
+  --acc:#c96b3c;--acc-l:#fdf0e8;
+  --danger:#c0392b;--danger-l:#fdecea;
+  --blue:#2e6b8a;--blue-l:#e4f0f6;
+  --purple:#6b4c8a;--purple-l:#f0e8f6;
+  --fn-attn:#e67e22;--fn-esc:#3498db;--fn-sens:#9b59b6;--fn-tang:#27ae60;
+  --radius:10px;--shadow:0 2px 8px rgba(0,0,0,.06);
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;padding-bottom:80px}
+.header{background:var(--pri-d);color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100}
+.header h1{font-size:18px;font-weight:600}
+.header p{font-size:12px;opacity:.8;margin-top:2px}
+.tabs{display:flex;background:var(--card);border-bottom:2px solid var(--border);overflow-x:auto;position:sticky;top:60px;z-index:99}
+.tab{flex:1;min-width:0;padding:12px 6px;text-align:center;font-size:12px;font-weight:500;color:var(--sub);cursor:pointer;border-bottom:3px solid transparent;transition:.2s;white-space:nowrap}
+.tab.active{color:var(--pri);border-bottom-color:var(--pri);background:var(--pri-l)}
+.tab .num{display:inline-block;width:20px;height:20px;border-radius:50%;background:var(--sub);color:#fff;font-size:11px;line-height:20px;margin-bottom:2px}
+.tab.active .num{background:var(--pri)}
+.section{display:none;padding:16px;max-width:800px;margin:0 auto}
+.section.active{display:block}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-t{font-size:16px;font-weight:600;margin-bottom:4px}
+.card-d{font-size:12px;color:var(--sub);margin-bottom:12px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:12px;font-weight:500;margin-bottom:4px;color:var(--sub)}
+input[type="text"],input[type="number"],input[type="date"],input[type="datetime-local"],select,textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--bg)}
+textarea{resize:vertical;min-height:60px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:.2s}
+.btn-pri{background:var(--pri);color:#fff}.btn-pri:hover{background:var(--pri-d)}
+.btn-acc{background:var(--acc);color:#fff}
+.btn-out{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-out:hover{background:var(--pri-l)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-block{width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:120px}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
+.fn-badge-attn{background:#fdebd0;color:#e67e22}
+.fn-badge-esc{background:#d6eaf8;color:#2e86c1}
+.fn-badge-sens{background:#e8daef;color:#7d3c98}
+.fn-badge-tang{background:#d5f5e3;color:#1e8449}
+
+/* Sub-tabs */
+.sub-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.sub-tab{padding:8px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:var(--bg);border:1px solid var(--border);transition:.2s}
+.sub-tab.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+.sub-section{display:none}.sub-section.active{display:block}
+
+/* Function cards */
+.fn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fn-card{padding:14px;border-radius:var(--radius);border:2px solid var(--border);cursor:pointer;text-align:center;transition:.2s}
+.fn-card:hover{border-color:var(--pri)}
+.fn-card.selected{border-color:var(--pri);background:var(--pri-l)}
+.fn-card .fn-icon{font-size:28px;margin-bottom:4px}
+.fn-card .fn-name{font-size:13px;font-weight:600}
+.fn-card .fn-desc{font-size:11px;color:var(--sub);margin-top:2px}
+
+/* EBP cards */
+.ebp-cat{margin-bottom:16px}
+.ebp-cat-title{font-size:13px;font-weight:600;padding:8px 12px;border-radius:8px 8px 0 0;color:#fff}
+.ebp-cat-ant{background:var(--blue)}
+.ebp-cat-alt{background:var(--pri)}
+.ebp-cat-con{background:var(--acc)}
+.ebp-cat-sys{background:var(--purple)}
+.ebp-item{padding:10px 12px;border:1px solid var(--border);border-top:none;cursor:pointer;transition:.15s;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.ebp-item:last-child{border-radius:0 0 8px 8px}
+.ebp-item:hover{background:var(--pri-l)}
+.ebp-item.selected{background:var(--pri-l);border-left:3px solid var(--pri)}
+.ebp-item .ebp-name{font-weight:500}
+.ebp-item .ebp-badges{display:flex;gap:4px;flex-wrap:wrap}
+.ebp-detail{display:none;padding:8px 12px;background:#fafaf5;border:1px solid var(--border);border-top:none;font-size:12px;color:var(--sub);line-height:1.7}
+
+/* BIP form */
+.bip-section{border-left:3px solid var(--pri);padding-left:12px;margin-bottom:16px}
+.bip-section-title{font-size:14px;font-weight:600;margin-bottom:8px;color:var(--pri)}
+.crisis-level{padding:10px;border-radius:8px;margin-bottom:8px}
+.crisis-1{background:#e8f8f5;border-left:4px solid #1abc9c}
+.crisis-2{background:#fef9e7;border-left:4px solid #f1c40f}
+.crisis-3{background:#fdebd0;border-left:4px solid #e67e22}
+.crisis-4{background:#fdecea;border-left:4px solid #c0392b}
+
+/* Graph */
+.graph-container{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border)}
+canvas{width:100%!important;max-height:400px}
+.phase-tag{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;margin:2px}
+.phase-a{background:#d6eaf8;color:#2e86c1}
+.phase-b{background:#d5f5e3;color:#1e8449}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px}
+.stat-card{background:var(--bg);padding:10px;border-radius:8px;text-align:center}
+.stat-val{font-size:20px;font-weight:700;color:var(--pri)}
+.stat-label{font-size:11px;color:var(--sub)}
+
+/* History items */
+.hist-item{padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.hist-item:hover{background:var(--pri-l)}
+.hist-del{color:var(--danger);cursor:pointer;font-size:16px}
+.empty-msg{text-align:center;padding:30px;color:var(--sub);font-size:13px}
+
+/* ABC record display */
+.abc-record{padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:12px}
+.abc-label{font-weight:600;color:var(--pri)}
+
+/* ═══ Tablet responsive (768px+) ═══ */
+@media (min-width: 768px) {
+  body { font-size: 15px }
+  .header { padding: 20px 32px }
+  .header h1 { font-size: 22px }
+  .header p { font-size: 13px }
+  .section { padding: 24px 32px; max-width: 960px }
+  .card { padding: 20px 24px; margin-bottom: 16px }
+  .card-t { font-size: 18px }
+  .card-d { font-size: 13px }
+  .tab { padding: 14px 12px; font-size: 13px }
+  .tab .num { width: 24px; height: 24px; font-size: 12px; line-height: 24px }
+  
+  /* BIP form: 2-column layout for basic info */
+  .bip-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px }
+  
+  /* Input fields larger on tablet */
+  input[type="text"], input[type="number"], input[type="date"], 
+  input[type="datetime-local"], select, textarea {
+    padding: 12px 14px; font-size: 15px
+  }
+  textarea { min-height: 80px }
+  
+  /* Function grid: 2x2 larger cards */
+  .fn-grid { gap: 12px }
+  .fn-card { padding: 20px }
+  .fn-card .fn-icon { font-size: 36px }
+  .fn-card .fn-name { font-size: 15px }
+  .fn-card .fn-desc { font-size: 12px }
+  
+  /* EBP items larger */
+  .ebp-item { padding: 14px 16px; font-size: 14px }
+  .ebp-detail { padding: 12px 16px; font-size: 13px }
+  
+  /* Buttons */
+  .btn { padding: 12px 22px; font-size: 14px }
+  .btn-sm { padding: 8px 16px; font-size: 13px }
+  
+  /* Sub tabs */
+  .sub-tab { padding: 10px 18px; font-size: 13px }
+  
+  /* Badge */
+  .badge { padding: 4px 12px; font-size: 12px }
+  
+  /* BIP section titles */
+  .bip-section { padding-left: 16px; margin-bottom: 20px }
+  .bip-section-title { font-size: 16px; margin-bottom: 10px }
+  
+  /* Crisis levels */
+  .crisis-level { padding: 14px }
+  
+  /* CBM diagram larger */
+  .cbm-box textarea { min-height: 50px; font-size: 13px }
+  #sec-3 [style*="max-width:200px"] { max-width: 280px !important }
+  
+  /* Stats grid */
+  .stat-grid { grid-template-columns: repeat(4, 1fr) }
+  .stat-val { font-size: 24px }
+  
+  /* History items */
+  .hist-item { padding: 14px 16px; font-size: 14px }
+  
+  /* Row layout improvement */
+  .row { gap: 16px }
+  .row > * { min-width: 200px }
+  
+  /* Graph canvas */
+  canvas { max-height: 500px }
+  
+  /* Labels */
+  .fg label { font-size: 13px; margin-bottom: 6px }
+}
+
+/* ═══ Large tablet / landscape (1024px+) ═══ */
+@media (min-width: 1024px) {
+  .section { max-width: 1080px; padding: 28px 40px }
+  
+  /* BIP: side by side sections */
+  .bip-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start }
+  
+  /* 3-column function grid */
+  .fn-grid { grid-template-columns: repeat(4, 1fr) }
+  
+  /* CBM boxes in row */
+  .cbm-strat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px }
+  
+  /* Crisis levels 2-column */
+  .crisis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+}
+
+/* Print styles */
+@media print{
+  .header,.tabs,.btn,.sub-tabs{display:none!important}
+  .section{display:block!important;padding:0}
+  .card{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FBA → BIP 데이터 도구</h1>
+  <p>행동기록 → 기능선택 → EBP추천 → BIP작성 → 효과그래프</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab(0)"><div class="num">1</div><br>행동기록</div>
+  <div class="tab" onclick="showTab(1)"><div class="num">2</div><br>기능선택</div>
+  <div class="tab" onclick="showTab(2)"><div class="num">3</div><br>EBP추천</div>
+  <div class="tab" onclick="showTab(3)"><div class="num">4</div><br>BIP작성</div>
+  <div class="tab" onclick="showTab(4)"><div class="num">5</div><br>효과그래프</div>
+</div>
+
+<!-- ══════ TAB 1: 행동 기록 ══════ -->
+<div class="section active" id="sec-0">
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="showSub(0,0)">빈도 기록</div>
+    <div class="sub-tab" onclick="showSub(0,1)">지속시간</div>
+    <div class="sub-tab" onclick="showSub(0,2)">ABC 기록</div>
+    <div class="sub-tab" onclick="showSub(0,3)">기록 보기</div>
+  </div>
+
+  <!-- 빈도 기록 -->
+  <div class="sub-section active" id="sub-0-0">
+    <div class="card">
+      <div class="card-t">빈도 기록</div>
+      <div class="row">
+        <div class="fg"><label>학생</label><input type="text" id="freq-stu" placeholder="학생 이름"></div>
+        <div class="fg"><label>행동</label><input type="text" id="freq-beh" placeholder="목표 행동"></div>
+      </div>
+      <div class="fg"><label>관찰 시간(분)</label><input type="number" id="freq-min" value="30" min="1"></div>
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:48px;font-weight:700;color:var(--pri)" id="freq-count">0</div>
+        <div style="font-size:13px;color:var(--sub)" id="freq-rate">0.00 회/분</div>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+          <button class="btn btn-pri" style="font-size:24px;width:60px;height:60px;border-radius:50%" onclick="freqChange(1)">+</button>
+          <button class="btn btn-out" style="font-size:24px;width:60px;height:60px;border-radius:50%" onclick="freqChange(-1)">−</button>
+        </div>
+      </div>
+      <button class="btn btn-acc btn-block" onclick="saveFreq()">빈도 기록 저장</button>
+    </div>
+  </div>
+
+  <!-- 지속시간 -->
+  <div class="sub-section" id="sub-0-1">
+    <div class="card">
+      <div class="card-t">지속시간 기록</div>
+      <div class="row">
+        <div class="fg"><label>학생</label><input type="text" id="dur-stu" placeholder="학생 이름"></div>
+        <div class="fg"><label>행동</label><input type="text" id="dur-beh" placeholder="목표 행동"></div>
+      </div>
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:40px;font-weight:700;color:var(--pri);font-variant-numeric:tabular-nums" id="dur-display">00:00</div>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+          <button class="btn btn-pri" id="dur-toggle" onclick="toggleTimer()">▶ 시작</button>
+          <button class="btn btn-out" onclick="resetTimer()">초기화</button>
+        </div>
+        <div id="dur-laps" style="margin-top:12px;font-size:12px;color:var(--sub)"></div>
+      </div>
+      <button class="btn btn-acc btn-block" onclick="saveDur()">지속시간 기록 저장</button>
+    </div>
+  </div>
+
+  <!-- ABC 기록 -->
+  <div class="sub-section" id="sub-0-2">
+    <div class="card">
+      <div class="card-t">ABC 기록</div>
+      <div class="row">
+        <div class="fg"><label>학생</label><input type="text" id="abc-stu" placeholder="학생 이름"></div>
+        <div class="fg"><label>날짜/시간</label><input type="datetime-local" id="abc-dt"></div>
+      </div>
+      <div class="fg"><label>장소/상황</label><input type="text" id="abc-ctx" placeholder="예: 국어시간, 쉬는시간"></div>
+      <div class="fg"><label>A (선행사건)</label><textarea id="abc-a" placeholder="행동 직전 상황"></textarea></div>
+      <div class="fg"><label>B (행동)</label><textarea id="abc-b" placeholder="관찰된 행동"></textarea></div>
+      <div class="fg"><label>C (후속결과)</label><textarea id="abc-c" placeholder="행동 직후 결과"></textarea></div>
+      <div class="row">
+        <div class="fg"><label>강도 (1~5)</label>
+          <select id="abc-int"><option value="1">1-약함</option><option value="2">2</option><option value="3" selected>3-보통</option><option value="4">4</option><option value="5">5-심함</option></select>
+        </div>
+        <div class="fg"><label>추정 기능</label>
+          <select id="abc-fn"><option value="">선택 안함</option><option value="관심끌기">관심끌기</option><option value="회피/탈출">회피/탈출</option><option value="감각자극">감각자극</option><option value="실물획득">실물획득</option></select>
+        </div>
+      </div>
+      <button class="btn btn-acc btn-block" onclick="saveABC()">ABC 기록 저장</button>
+    </div>
+  </div>
+
+  <!-- 기록 보기 -->
+  <div class="sub-section" id="sub-0-3">
+    <div class="card">
+      <div class="card-t">기록 보기</div>
+      <div class="row" style="margin-bottom:12px">
+        <div class="fg"><label>학생 필터</label>
+          <select id="hist-filter" onchange="renderHistory()"><option value="">전체</option></select>
+        </div>
+        <div class="fg"><label>유형 필터</label>
+          <select id="hist-type" onchange="renderHistory()"><option value="">전체</option><option value="freq">빈도</option><option value="dur">지속시간</option><option value="abc">ABC</option></select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-out btn-sm" onclick="exportCSV()">CSV 내보내기</button>
+        <button class="btn btn-out btn-sm" onclick="exportJSON()">JSON 백업</button>
+        <button class="btn btn-out btn-sm" onclick="importJSON()">JSON 복원</button>
+      </div>
+      <div id="hist-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TAB 2: 기능 선택 ══════ -->
+<div class="section" id="sec-1">
+  <div class="card">
+    <div class="card-t">② 행동 기능 직접 선택</div>
+    <div class="card-d">FBA(직접관찰, 면담, MAS/FAST 등)를 통해 파악한 기능을 선택하세요. 복수 선택 가능합니다.</div>
+    <div class="row">
+      <div class="fg"><label>학생</label><input type="text" id="fn-stu" placeholder="학생 이름"></div>
+      <div class="fg"><label>목표 행동</label><input type="text" id="fn-beh" placeholder="조작적 정의"></div>
+    </div>
+    <div class="fn-grid" id="fn-grid">
+      <div class="fn-card" data-fn="관심끌기" onclick="toggleFn(this)">
+        <div class="fn-icon">👀</div>
+        <div class="fn-name">관심끌기</div>
+        <div class="fn-desc">사회적 관심/주의 획득</div>
+      </div>
+      <div class="fn-card" data-fn="회피/탈출" onclick="toggleFn(this)">
+        <div class="fn-icon">🚪</div>
+        <div class="fn-name">회피/탈출</div>
+        <div class="fn-desc">과제/활동/상황 회피</div>
+      </div>
+      <div class="fn-card" data-fn="감각자극" onclick="toggleFn(this)">
+        <div class="fn-icon">✨</div>
+        <div class="fn-name">감각자극</div>
+        <div class="fn-desc">자동강화/감각 추구·회피</div>
+      </div>
+      <div class="fn-card" data-fn="실물획득" onclick="toggleFn(this)">
+        <div class="fn-icon">🎁</div>
+        <div class="fn-name">실물획득</div>
+        <div class="fn-desc">원하는 물건/활동 획득</div>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn btn-pri btn-block" onclick="saveFnSelection()">기능 선택 저장 → ③ EBP 추천으로</button>
+    </div>
+  </div>
+  <div id="fn-saved-list"></div>
+</div>
+
+<!-- ══════ TAB 3: EBP 중재 추천 ══════ -->
+<div class="section" id="sec-2">
+  <div class="card">
+    <div class="card-t">③ EBP 중재 추천</div>
+    <div class="card-d">선택한 기능에 따른 증거기반중재 목록입니다. 적용할 중재를 클릭하세요.</div>
+    <div class="fg"><label>기능 선택 불러오기</label>
+      <select id="ebp-load" onchange="loadEBP()"><option value="">저장된 기능 선택</option></select>
+    </div>
+  </div>
+  <div id="ebp-list"></div>
+  <div id="ebp-selected-summary" style="display:none" class="card">
+    <div class="card-t">선택된 중재 요약</div>
+    <div id="ebp-selected-content"></div>
+    <button class="btn btn-pri btn-block" style="margin-top:12px" onclick="sendToBIP()">→ ④ BIP 작성으로 보내기</button>
+  </div>
+</div>
+
+<!-- ══════ TAB 4: BIP 작성 ══════ -->
+<div class="section" id="sec-3">
+  <div class="card">
+    <div class="card-t">④ 행동중재계획(BIP) 작성</div>
+    <div class="card-d">FBA 결과와 선택한 EBP를 기반으로 BIP를 작성합니다.</div>
+  </div>
+
+  <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">1. 기본 정보</div>
+      <div class="row">
+        <div class="fg"><label>학생 이름</label><input type="text" id="bip-stu"></div>
+        <div class="fg"><label>작성일</label><input type="date" id="bip-date"></div>
+      </div>
+      <div class="row">
+        <div class="fg"><label>학년/학급</label><input type="text" id="bip-class" placeholder="예: 3학년 해바라기반"></div>
+        <div class="fg"><label>작성자</label><input type="text" id="bip-author"></div>
+      </div>
+      <div class="fg"><label>팀 구성원</label><input type="text" id="bip-team" placeholder="예: 담임, 특수교사, 보조원, 보호자"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">2. 목표 행동 조작적 정의</div>
+      <div class="fg"><label>도전행동</label><textarea id="bip-target" placeholder="관찰 가능하고 측정 가능한 용어로 기술&#10;예: 교사의 지시 후 5초 이내에 과제물을 바닥에 던지거나 찢는 행동"></textarea></div>
+      <div class="fg"><label>현재 수준 (기초선)</label><textarea id="bip-baseline" placeholder="예: 하루 평균 4.2회, 주로 국어/수학 시간에 발생"></textarea></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">3. FBA 결과 요약</div>
+      <div class="fg"><label>행동의 기능</label><div id="bip-functions" style="margin-top:4px"></div></div>
+      <div class="bip-2col">
+        <div class="fg"><label>선행사건 (배경/직전)</label><textarea id="bip-antecedent" placeholder="배경사건: 수면 부족, 아침 결식&#10;직전 선행사건: 어려운 과제 제시, 선호활동 중단 요구"></textarea></div>
+        <div class="fg"><label>후속결과 (유지 변인)</label><textarea id="bip-consequence" placeholder="과제 제거/지연, 또래 관심, 감각 자극 획득 등"></textarea></div>
+      </div>
+      <div class="fg"><label>가설 진술</label><textarea id="bip-hypothesis" placeholder="[선행사건]이 있을 때 [학생]은 [행동]을 하며, 그 결과 [기능]을 달성한다."></textarea></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bip-section" style="border-left-color:#8e44ad">
+      <div class="bip-section-title" style="color:#8e44ad">3.5 경쟁행동모델 (Competing Behavior Model)</div>
+      <div class="card-d">O'Neill et al.(1997). 문제행동 경로와 경쟁하는 바람직한 행동/대안행동 경로를 설정하고, 각 경로에 대한 중재 전략을 매핑합니다.</div>
+
+      <div style="background:#f5f0fa;border:1px solid #d5c8e6;border-radius:10px;padding:16px;margin-bottom:12px">
+        <!-- CBM Diagram Visual -->
+        <div style="text-align:center;font-size:12px;color:#666;margin-bottom:8px">▼ 경쟁행동모델 다이어그램</div>
+
+        <!-- Top row: Desired behavior path -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px">
+          <div style="width:30%;min-width:100px"></div>
+          <div style="background:#d5f5e3;border:2px solid #27ae60;border-radius:8px;padding:8px 10px;flex:1;max-width:200px;text-align:center">
+            <div style="font-size:10px;color:#27ae60;font-weight:600">바람직한 행동</div>
+            <textarea id="cbm-desired" placeholder="예: 손들고 도움 요청" style="min-height:36px;font-size:12px;background:#fff;border:1px solid #a9dfbf;margin-top:4px"></textarea>
+          </div>
+          <div style="color:#27ae60;font-size:16px">→</div>
+          <div style="background:#d5f5e3;border:2px solid #27ae60;border-radius:8px;padding:8px 10px;flex:1;max-width:200px;text-align:center">
+            <div style="font-size:10px;color:#27ae60;font-weight:600">바람직한 결과</div>
+            <textarea id="cbm-desired-result" placeholder="예: 도움 받음 + 칭찬" style="min-height:36px;font-size:12px;background:#fff;border:1px solid #a9dfbf;margin-top:4px"></textarea>
+          </div>
+        </div>
+
+        <!-- Arrows up -->
+        <div style="text-align:center;color:#8e44ad;font-size:12px;margin:2px 0">↑ 경쟁 ↑</div>
+
+        <!-- Middle row: Problem behavior path -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0">
+          <div style="background:#fdebd0;border:2px solid #e67e22;border-radius:8px;padding:8px 10px;flex:1;max-width:200px;text-align:center">
+            <div style="font-size:10px;color:#e67e22;font-weight:600">선행사건</div>
+            <textarea id="cbm-antecedent" placeholder="예: 어려운 과제 제시" style="min-height:36px;font-size:12px;background:#fff;border:1px solid #f5cba7;margin-top:4px"></textarea>
+          </div>
+          <div style="color:#e67e22;font-size:16px">→</div>
+          <div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:8px 10px;flex:1;max-width:200px;text-align:center">
+            <div style="font-size:10px;color:#c0392b;font-weight:600">문제행동</div>
+            <textarea id="cbm-problem" placeholder="예: 과제물 찢기/던지기" style="min-height:36px;font-size:12px;background:#fff;border:1px solid #f1948a;margin-top:4px"></textarea>
+          </div>
+          <div style="color:#c0392b;font-size:16px">→</div>
+          <div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:8px 10px;flex:1;max-width:200px;text-align:center">
+            <div style="font-size:10px;color:#c0392b;font-weight:600">유지결과 (기능)</div>
+            <textarea id="cbm-maintaining" placeholder="예: 과제 제거됨(회피)" style="min-height:36px;font-size:12px;background:#fff;border:1px solid #f1948a;margin-top:4px"></textarea>
+          </div>
+        </div>
+
+        <!-- Arrows down -->
+        <div style="text-align:center;color:#8e44ad;font-size:12px;margin:2px 0">↓ 경쟁 ↓</div>
+
+        <!-- Bottom row: Alternative behavior path -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px">
+          <div style="width:30%;min-width:100px"></div>
+          <div style="background:#d6eaf8;border:2px solid #2e86c1;border-radius:8px;padding:8px 10px;flex:1;max-width:200px;text-align:center">
+            <div style="font-size:10px;color:#2e86c1;font-weight:600">대안행동 (단기 수용)</div>
+            <textarea id="cbm-alternative" placeholder="예: 책상에 엎드리기&#10;(파괴 없이 회피 달성)" style="min-height:36px;font-size:12px;background:#fff;border:1px solid #aed6f1;margin-top:4px"></textarea>
+          </div>
+          <div style="color:#2e86c1;font-size:16px">→</div>
+          <div style="background:#d6eaf8;border:2px solid #2e86c1;border-radius:8px;padding:8px 10px;flex:1;max-width:200px;text-align:center">
+            <div style="font-size:10px;color:#2e86c1;font-weight:600">대안적 결과</div>
+            <textarea id="cbm-alt-result" placeholder="예: 짧은 휴식 제공&#10;(파괴 없이 기능 충족)" style="min-height:36px;font-size:12px;background:#fff;border:1px solid #aed6f1;margin-top:4px"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- CBM → Intervention Strategy Mapping -->
+      <div style="font-weight:600;font-size:13px;margin:12px 0 8px;color:#8e44ad">중재 전략 매핑</div>
+      <div class="cbm-strat-row">
+        <div class="card" style="background:var(--blue-l);border-color:var(--blue);margin-bottom:8px">
+          <div style="font-weight:600;color:var(--blue);font-size:12px;margin-bottom:4px">🔵 선행사건 중재 → 문제행동 발생 확률 ↓</div>
+          <textarea id="cbm-strat-ant" placeholder="선행사건을 수정/제거하여 문제행동 발생 가능성을 줄이는 전략&#10;예: 과제 난이도 조정, 선택권 제공, 시각적 일과표" style="min-height:50px;font-size:12px"></textarea>
+        </div>
+        <div class="card" style="background:var(--pri-l);border-color:var(--pri);margin-bottom:8px">
+          <div style="font-weight:600;color:var(--pri);font-size:12px;margin-bottom:4px">🟢 교수 전략 → 바람직한 행동/대안행동 교수</div>
+          <textarea id="cbm-strat-teach" placeholder="바람직한 행동과 대안행동을 직접 교수하는 전략&#10;예: FCT(도움 요청), 자기관리, 사회적 이야기" style="min-height:50px;font-size:12px"></textarea>
+        </div>
+        <div class="card" style="background:var(--acc-l);border-color:var(--acc);margin-bottom:8px">
+          <div style="font-weight:600;color:var(--acc);font-size:12px;margin-bottom:4px">🟠 후속결과 전략 → 바람직한 행동 강화 + 문제행동 소거</div>
+          <textarea id="cbm-strat-con" placeholder="바람직한 행동에 강화, 문제행동에 소거/기능 차단&#10;예: DRA(적절한 요청→즉각 도움), 탈출 소거" style="min-height:50px;font-size:12px"></textarea>
+        </div>
+      </div>
+
+      <button class="btn btn-pri btn-sm" onclick="cbmToIntervention()" style="margin-top:8px">↓ 아래 중재 방법 섹션에 반영</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">5. 강화제 정보</div>
+      <div class="fg"><label>선호 강화제</label><textarea id="bip-reinf" placeholder="사회적: 칭찬, 하이파이브&#10;활동: 태블릿, 그리기&#10;실물: 스티커, 간식"></textarea></div>
+      <div class="fg"><label>강화 스케줄</label><input type="text" id="bip-schedule" placeholder="예: 연속강화(CRF) → 점진적으로 FR3으로 감소"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">6. 목표 설정</div>
+      <div class="bip-2col">
+        <div class="fg"><label>단기 목표 (2~4주)</label><textarea id="bip-goal-short" placeholder="예: 과제 거부 행동을 하루 평균 4.2회에서 2회 이하로 감소"></textarea></div>
+        <div class="fg"><label>장기 목표 (학기)</label><textarea id="bip-goal-long" placeholder="예: 어려운 과제 상황에서 도움 요청 카드를 독립적으로 사용"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">7. 중재 방법</div>
+      <div class="card" style="background:var(--blue-l);border-color:var(--blue)">
+        <div style="font-weight:600;color:var(--blue);margin-bottom:8px">선행사건 중재 (예방)</div>
+        <div id="bip-int-ant"></div>
+        <textarea id="bip-int-ant-custom" placeholder="추가 선행사건 전략 직접 입력" style="margin-top:8px"></textarea>
+      </div>
+      <div class="card" style="background:var(--pri-l);border-color:var(--pri)">
+        <div style="font-weight:600;color:var(--pri);margin-bottom:8px">대체행동 교수 (교수)</div>
+        <div id="bip-int-alt"></div>
+        <textarea id="bip-int-alt-custom" placeholder="추가 대체행동 전략 직접 입력" style="margin-top:8px"></textarea>
+        <!-- 상황이야기 연결 -->
+        <div style="margin-top:12px;padding:12px;background:#fff;border:2px dashed var(--pri);border-radius:10px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:24px">📖</span>
+            <div>
+              <div style="font-weight:600;font-size:13px;color:var(--pri)">사회적 상황이야기 (Social Story™)</div>
+              <div style="font-size:11px;color:var(--sub)">선행전략으로 상황이야기를 제작하여 학생에게 제공</div>
+            </div>
+          </div>
+          <div id="ss-fn-tags" style="margin-bottom:8px"></div>
+          <button class="btn btn-pri btn-block" onclick="openSocialStory()" style="gap:8px">
+            📖 상황이야기 만들기 도구 열기
+          </button>
+          <div style="font-size:11px;color:var(--sub);margin-top:6px;text-align:center">
+            BIP의 기능가설에 맞는 템플릿이 자동 추천됩니다
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:var(--acc-l);border-color:var(--acc)">
+        <div style="font-weight:600;color:var(--acc);margin-bottom:8px">후속결과 중재 (강화/소거)</div>
+        <div id="bip-int-con"></div>
+        <textarea id="bip-int-con-custom" placeholder="추가 후속결과 전략 직접 입력" style="margin-top:8px"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">8. 위기 관리 계획</div>
+      <div class="crisis-grid">
+        <div class="crisis-level crisis-1">
+          <div style="font-weight:600;font-size:13px">🟢 1단계: 예방</div>
+          <textarea id="bip-crisis-1" placeholder="행동 발생 전 초기 징후 인식 및 대응&#10;예: 안절부절, 얼굴 붉어짐 → 선택권 제공, 감각 휴식 제안"></textarea>
+        </div>
+        <div class="crisis-level crisis-2">
+          <div style="font-weight:600;font-size:13px">🟡 2단계: 완화(de-escalation)</div>
+          <textarea id="bip-crisis-2" placeholder="행동 고조 시 대응&#10;예: 언어적 지시 최소화, 물리적 거리 유지, 안전 공간 제공"></textarea>
+        </div>
+        <div class="crisis-level crisis-3">
+          <div style="font-weight:600;font-size:13px">🟠 3단계: 위기 대처</div>
+          <textarea id="bip-crisis-3" placeholder="행동이 정점에 달했을 때&#10;예: 다른 학생 대피, 위험 물건 제거, 담당자 호출"></textarea>
+        </div>
+        <div class="crisis-level crisis-4">
+          <div style="font-weight:600;font-size:13px">🔴 4단계: 회복</div>
+          <textarea id="bip-crisis-4" placeholder="행동 진정 후&#10;예: 10분 회복 시간 → 간단한 과제로 복귀 → 성공 강화"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">9. 데이터 수집 및 검토 계획</div>
+      <div class="fg"><label>측정 방법</label>
+        <select id="bip-measure"><option value="빈도">빈도 기록</option><option value="지속시간">지속시간 기록</option><option value="간격">간격 기록</option><option value="ABC">ABC 기록</option><option value="복합">복합 측정</option></select>
+      </div>
+      <div class="fg"><label>데이터 검토 주기</label>
+        <select id="bip-review"><option value="주1회">주 1회</option><option value="격주">격주</option><option value="월1회">월 1회</option></select>
+      </div>
+      <div class="fg"><label>검토 기준</label><textarea id="bip-criteria" placeholder="예: 3주 연속 목표 미달 시 중재 수정 회의 소집"></textarea></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-pri" onclick="saveBIP()">💾 BIP 저장</button>
+    <button class="btn btn-acc" onclick="exportBIPPdf()">📄 PDF 내보내기</button>
+    <button class="btn btn-out" onclick="loadBIPList()">📂 저장된 BIP 불러오기</button>
+  </div>
+  <div id="bip-saved-list" style="margin-top:12px"></div>
+</div>
+
+<!-- ══════ TAB 5: 효과 그래프 ══════ -->
+<div class="section" id="sec-4">
+  <div class="card">
+    <div class="card-t">⑤ 중재 효과 그래프</div>
+    <div class="card-d">기초선과 중재 구간 데이터를 입력하면 꺾은선 그래프로 시각화됩니다.</div>
+  </div>
+
+  <div class="card">
+    <div class="sub-tabs">
+      <div class="sub-tab active" onclick="showGraphMode('manual')">직접 입력</div>
+      <div class="sub-tab" onclick="showGraphMode('auto')">행동기록 연동</div>
+    </div>
+
+    <!-- 직접 입력 모드 -->
+    <div id="graph-manual">
+      <div class="row">
+        <div class="fg"><label>학생</label><input type="text" id="gr-stu" placeholder="학생 이름"></div>
+        <div class="fg"><label>행동</label><input type="text" id="gr-beh" placeholder="목표 행동"></div>
+      </div>
+      <div class="fg"><label>측정 단위</label>
+        <select id="gr-unit"><option value="회">회(빈도)</option><option value="분">분(지속시간)</option><option value="%">%(비율)</option></select>
+      </div>
+      <div class="fg"><label>설계 유형</label>
+        <select id="gr-design" onchange="updatePhaseInputs()">
+          <option value="AB">A-B 설계</option>
+          <option value="ABAB">A-B-A-B 반전 설계</option>
+          <option value="MB">다중기초선 (행동별)</option>
+        </select>
+      </div>
+      <div id="phase-inputs"></div>
+      <button class="btn btn-pri btn-block" style="margin-top:12px" onclick="drawGraph()">📊 그래프 그리기</button>
+    </div>
+
+    <!-- 자동 연동 모드 -->
+    <div id="graph-auto" style="display:none">
+      <div class="fg"><label>학생 선택</label>
+        <select id="gr-auto-stu" onchange="loadAutoGraphData()"><option value="">선택</option></select>
+      </div>
+      <div class="fg"><label>중재 시작일</label><input type="date" id="gr-auto-start"></div>
+      <button class="btn btn-pri btn-block" onclick="drawAutoGraph()">📊 자동 그래프 그리기</button>
+    </div>
+  </div>
+
+  <div class="graph-container" id="graph-box" style="display:none">
+    <canvas id="graph-canvas"></canvas>
+    <div class="stat-grid" id="graph-stats"></div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn btn-out btn-sm" onclick="exportGraphCSV()">CSV 내보내기</button>
+      <button class="btn btn-out btn-sm" onclick="saveGraphImage()">이미지 저장</button>
+    </div>
+  </div>
+
+  <div id="saved-graphs" style="margin-top:12px"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════
+const LS = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } },
+  set(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
+  getObj(k) { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } },
+  setObj(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+};
+
+// ═══════════════════════════════════════
+// TAB NAVIGATION
+// ═══════════════════════════════════════
+function showTab(i) {
+  document.querySelectorAll('.section').forEach((s, idx) => {
+    s.classList.toggle('active', idx === i);
+  });
+  document.querySelectorAll('.tab').forEach((t, idx) => {
+    t.classList.toggle('active', idx === i);
+  });
+  if (i === 0) renderHistory();
+  if (i === 1) renderFnList();
+  if (i === 2) loadFnOptions();
+  if (i === 3) loadBIPList();
+  if (i === 4) { loadAutoStudents(); loadSavedGraphs(); }
+}
+
+function showSub(tab, sub) {
+  const parent = document.getElementById(`sec-${tab}`);
+  parent.querySelectorAll('.sub-section').forEach((s, i) => s.classList.toggle('active', i === sub));
+  parent.querySelectorAll('.sub-tab').forEach((t, i) => t.classList.toggle('active', i === sub));
+}
+
+// ═══════════════════════════════════════
+// TAB 1: 행동 기록
+// ═══════════════════════════════════════
+let freqCount = 0;
+function freqChange(d) {
+  freqCount = Math.max(0, freqCount + d);
+  document.getElementById('freq-count').textContent = freqCount;
+  const m = parseFloat(document.getElementById('freq-min').value) || 1;
+  document.getElementById('freq-rate').textContent = (freqCount / m).toFixed(2) + ' 회/분';
+}
+
+function saveFreq() {
+  const stu = document.getElementById('freq-stu').value.trim();
+  const beh = document.getElementById('freq-beh').value.trim();
+  if (!stu || !beh) return alert('학생과 행동을 입력하세요.');
+  const m = parseFloat(document.getElementById('freq-min').value) || 1;
+  const records = LS.get('records');
+  records.push({
+    type: 'freq', student: stu, behavior: beh,
+    count: freqCount, minutes: m, rate: (freqCount / m).toFixed(2),
+    date: new Date().toISOString(), id: Date.now()
+  });
+  LS.set('records', records);
+  freqCount = 0; document.getElementById('freq-count').textContent = '0';
+  document.getElementById('freq-rate').textContent = '0.00 회/분';
+  alert('저장되었습니다.');
+}
+
+// Timer
+let timerInterval = null, timerSeconds = 0, timerRunning = false;
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval); timerRunning = false;
+    document.getElementById('dur-toggle').textContent = '▶ 계속';
+  } else {
+    timerRunning = true;
+    document.getElementById('dur-toggle').textContent = '⏸ 일시정지';
+    timerInterval = setInterval(() => {
+      timerSeconds++;
+      const mm = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+      const ss = String(timerSeconds % 60).padStart(2, '0');
+      document.getElementById('dur-display').textContent = `${mm}:${ss}`;
+    }, 1000);
+  }
+}
+function resetTimer() {
+  clearInterval(timerInterval); timerRunning = false; timerSeconds = 0;
+  document.getElementById('dur-display').textContent = '00:00';
+  document.getElementById('dur-toggle').textContent = '▶ 시작';
+}
+function saveDur() {
+  const stu = document.getElementById('dur-stu').value.trim();
+  const beh = document.getElementById('dur-beh').value.trim();
+  if (!stu || !beh) return alert('학생과 행동을 입력하세요.');
+  const records = LS.get('records');
+  records.push({
+    type: 'dur', student: stu, behavior: beh,
+    seconds: timerSeconds,
+    duration: `${Math.floor(timerSeconds/60)}분 ${timerSeconds%60}초`,
+    date: new Date().toISOString(), id: Date.now()
+  });
+  LS.set('records', records);
+  resetTimer();
+  alert('저장되었습니다.');
+}
+
+// ABC
+function saveABC() {
+  const stu = document.getElementById('abc-stu').value.trim();
+  if (!stu) return alert('학생 이름을 입력하세요.');
+  const records = LS.get('records');
+  records.push({
+    type: 'abc', student: stu,
+    datetime: document.getElementById('abc-dt').value,
+    context: document.getElementById('abc-ctx').value.trim(),
+    antecedent: document.getElementById('abc-a').value.trim(),
+    behavior: document.getElementById('abc-b').value.trim(),
+    consequence: document.getElementById('abc-c').value.trim(),
+    intensity: document.getElementById('abc-int').value,
+    function: document.getElementById('abc-fn').value,
+    date: new Date().toISOString(), id: Date.now()
+  });
+  LS.set('records', records);
+  ['abc-a','abc-b','abc-c','abc-ctx'].forEach(id => document.getElementById(id).value = '');
+  alert('저장되었습니다.');
+}
+
+// History
+function renderHistory() {
+  const records = LS.get('records');
+  const filterStu = document.getElementById('hist-filter').value;
+  const filterType = document.getElementById('hist-type').value;
+
+  // Update student filter options
+  const students = [...new Set(records.map(r => r.student))];
+  const sel = document.getElementById('hist-filter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">전체</option>' + students.map(s => `<option value="${s}">${s}</option>`).join('');
+  sel.value = cur;
+
+  let filtered = records;
+  if (filterStu) filtered = filtered.filter(r => r.student === filterStu);
+  if (filterType) filtered = filtered.filter(r => r.type === filterType);
+
+  const box = document.getElementById('hist-list');
+  if (!filtered.length) { box.innerHTML = '<div class="empty-msg">기록이 없습니다.</div>'; return; }
+
+  box.innerHTML = filtered.slice().reverse().map(r => {
+    const d = new Date(r.date).toLocaleString('ko-KR', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    let info = '';
+    if (r.type === 'freq') info = `빈도 ${r.count}회 (${r.rate}회/분)`;
+    else if (r.type === 'dur') info = `지속시간 ${r.duration}`;
+    else if (r.type === 'abc') info = `ABC | ${r.behavior || '(행동)'}`;
+    return `<div class="hist-item">
+      <div><strong>${r.student}</strong> · ${info}<br><span style="font-size:11px;color:var(--sub)">${d}</span></div>
+      <span class="hist-del" onclick="deleteRecord(${r.id})">×</span>
+    </div>`;
+  }).join('');
+}
+
+function deleteRecord(id) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  const records = LS.get('records').filter(r => r.id !== id);
+  LS.set('records', records);
+  renderHistory();
+}
+
+function exportCSV() {
+  const records = LS.get('records');
+  if (!records.length) return alert('기록이 없습니다.');
+  const rows = [['유형','학생','행동','날짜','값','상세']];
+  records.forEach(r => {
+    if (r.type === 'freq') rows.push(['빈도', r.student, r.behavior, r.date, r.count, `${r.rate}회/분`]);
+    else if (r.type === 'dur') rows.push(['지속시간', r.student, r.behavior, r.date, r.seconds, r.duration]);
+    else if (r.type === 'abc') rows.push(['ABC', r.student, r.behavior, r.date, `강도${r.intensity}`, `A:${r.antecedent}|B:${r.behavior}|C:${r.consequence}`]);
+  });
+  const csv = '\uFEFF' + rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  downloadFile(csv, 'behavior-records.csv', 'text/csv');
+}
+
+function exportJSON() {
+  const data = { records: LS.get('records'), functions: LS.get('functions'), bips: LS.get('bips'), graphs: LS.get('graphs') };
+  downloadFile(JSON.stringify(data, null, 2), 'fba-bip-backup.json', 'application/json');
+}
+
+function importJSON() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.records) LS.set('records', data.records);
+        if (data.functions) LS.set('functions', data.functions);
+        if (data.bips) LS.set('bips', data.bips);
+        if (data.graphs) LS.set('graphs', data.graphs);
+        alert('복원 완료!'); renderHistory();
+      } catch { alert('파일 형식 오류'); }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+}
+
+// ═══════════════════════════════════════
+// TAB 2: 기능 선택
+// ═══════════════════════════════════════
+function toggleFn(el) { el.classList.toggle('selected'); }
+
+function saveFnSelection() {
+  const stu = document.getElementById('fn-stu').value.trim();
+  const beh = document.getElementById('fn-beh').value.trim();
+  if (!stu || !beh) return alert('학생과 행동을 입력하세요.');
+  const selected = [...document.querySelectorAll('.fn-card.selected')].map(c => c.dataset.fn);
+  if (!selected.length) return alert('기능을 하나 이상 선택하세요.');
+
+  const fns = LS.get('functions');
+  fns.push({ student: stu, behavior: beh, functions: selected, date: new Date().toISOString(), id: Date.now() });
+  LS.set('functions', fns);
+
+  document.querySelectorAll('.fn-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('fn-stu').value = '';
+  document.getElementById('fn-beh').value = '';
+  renderFnList();
+  alert('저장! ③ EBP 추천 탭으로 이동하세요.');
+  showTab(2);
+}
+
+function renderFnList() {
+  const fns = LS.get('functions');
+  const box = document.getElementById('fn-saved-list');
+  if (!fns.length) { box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="card"><div class="card-t">저장된 기능 선택</div>' +
+    fns.map(f => `<div class="hist-item">
+      <div><strong>${f.student}</strong> · ${f.behavior}<br>
+      ${f.functions.map(fn => `<span class="badge fn-badge-${fnKey(fn)}">${fn}</span>`).join(' ')}
+      </div>
+      <span class="hist-del" onclick="deleteFn(${f.id})">×</span>
+    </div>`).join('') + '</div>';
+}
+
+function deleteFn(id) {
+  if (!confirm('삭제?')) return;
+  LS.set('functions', LS.get('functions').filter(f => f.id !== id));
+  renderFnList();
+}
+
+function fnKey(fn) {
+  if (fn.includes('관심')) return 'attn';
+  if (fn.includes('회피') || fn.includes('탈출')) return 'esc';
+  if (fn.includes('감각')) return 'sens';
+  if (fn.includes('실물') || fn.includes('획득')) return 'tang';
+  return 'attn';
+}
+
+// ═══════════════════════════════════════
+// TAB 3: EBP 중재 추천 — 대규모 DB
+// ═══════════════════════════════════════
+const EBP_DB = {
+  '관심끌기': {
+    '선행사건 중재': [
+      { name: 'NCR (비수반 강화)', desc: '행동과 무관하게 일정 간격으로 관심/상호작용 제공. 관심 결핍을 선제적으로 해소', ncaep: true },
+      { name: '프라이밍', desc: '활동 전 미리 예고·연습하여 불안 감소 및 적절한 참여행동 촉진', ncaep: true },
+      { name: '환경 재구조화', desc: '좌석 배치, 교사 근접성 조정으로 적절한 관심 획득 기회 구조화', ncaep: false },
+      { name: '또래 짝짓기', desc: '적절한 상호작용 모델이 되는 또래와 짝을 지어 긍정적 관심 획득 기회 제공', ncaep: true },
+      { name: '역할 부여', desc: '학급 내 역할(도우미, 발표자)을 부여하여 적절한 방식으로 관심을 받을 기회 제공', ncaep: false },
+      { name: '시각적 일과표', desc: '언제 교사 관심을 받을 수 있는지 예측 가능하게 구조화', ncaep: true },
+    ],
+    '대체행동 교수': [
+      { name: 'FCT (기능적 의사소통 훈련)', desc: '적절한 방식으로 관심을 요청하는 의사소통 행동 교수. "선생님 봐주세요" 카드, 손들기 등', ncaep: true },
+      { name: '사회기술 교수 (SST)', desc: '대화 시작, 차례 지키기, 적절한 인사 등 사회적 관심 획득 기술 직접 교수', ncaep: true },
+      { name: '사회적 이야기', desc: '적절한 관심 요청 방법과 기다리기를 사회상황이야기로 교수', ncaep: true },
+      { name: '또래 매개 중재', desc: '또래가 적절한 관심 제공자·모델 역할. 또래 버디, 또래 교수 등', ncaep: true },
+      { name: '비디오 모델링', desc: '적절한 관심 요청 행동을 비디오로 시연하고 모방 연습', ncaep: true },
+      { name: '스크립팅/스크립트 페이딩', desc: '관심 요청 대화 스크립트를 제공하고 점진적으로 제거', ncaep: false },
+      { name: '자기관리', desc: '적절한 관심 요청 횟수를 스스로 기록하고 자기강화', ncaep: true },
+    ],
+    '후속결과 중재': [
+      { name: 'DRA (대체행동 차별강화)', desc: '적절한 관심 요청 행동에 즉각 강화, 부적절한 관심끌기 행동에는 관심 철회', ncaep: true },
+      { name: 'DRI (양립불가행동 차별강화)', desc: '관심끌기 행동과 동시에 할 수 없는 적절한 행동 강화', ncaep: true },
+      { name: 'DRO (타행동 차별강화)', desc: '일정 시간 도전행동 미발생 시 강화 제공', ncaep: true },
+      { name: '소거 (계획적 무관심)', desc: '부적절한 관심끌기 행동에 대해 체계적으로 관심 철회. 소거 폭발 대비 필수', ncaep: true },
+      { name: '토큰 시스템', desc: '적절한 행동에 토큰 제공 → 누적 시 선호 강화제 교환', ncaep: true },
+      { name: '집단 강화', desc: '학급 전체 목표 행동 달성 시 집단 강화. 소속감+또래 관심 활용', ncaep: false },
+      { name: 'CICO (Check-In/Check-Out)', desc: '매일 담당 성인과 체크인/체크아웃. 정기적 관심 제공 + 자기점검', ncaep: false },
+    ]
+  },
+  '회피/탈출': {
+    '선행사건 중재': [
+      { name: '과제 수정/교육과정 수정', desc: '난이도 조정, 분량 감소, 반응 양식 변경으로 과제 혐오성 감소', ncaep: false },
+      { name: '선택권 제공', desc: '과제 순서, 재료, 장소 등에 대한 선택 기회 제공으로 통제감 증가', ncaep: false },
+      { name: '행동 모멘텀', desc: '쉬운 요구 2~3개 → 어려운 요구 순서로 제시. 순응 모멘텀 형성', ncaep: true },
+      { name: '시각적 일과표', desc: '활동 순서와 종료 시점을 시각적으로 예측 가능하게 구조화', ncaep: true },
+      { name: '프라이밍', desc: '다음 활동/과제를 미리 소개하여 전환 불안 감소', ncaep: true },
+      { name: '선호 삽입/선호 산재', desc: '비선호 과제 사이에 선호 활동을 삽입하여 전체 과제 혐오성 감소', ncaep: false },
+      { name: 'First-Then 보드', desc: '"먼저~하면 그다음~" 시각적 제시. 비선호 과제 후 강화 예고', ncaep: true },
+      { name: '무오류 학습', desc: '즉각적 촉구로 오류 최소화 → 성공 경험 극대화 → 과제 혐오 감소', ncaep: false },
+      { name: '환경 구조화', desc: '자극 최소화, 작업 공간 구조화, TEACCH 기반 물리적 구조 제공', ncaep: false },
+      { name: '타이머/시간 제한 시각화', desc: '과제 지속 시간을 시각적으로 표시하여 "곧 끝난다" 예측 가능하게', ncaep: false },
+    ],
+    '대체행동 교수': [
+      { name: 'FCT (기능적 의사소통 훈련)', desc: '"도와주세요", "쉬고 싶어요" 등 적절한 회피 요청 교수. PECS/AAC 활용 가능', ncaep: true },
+      { name: '자기관리', desc: '과제 참여 시간을 스스로 모니터링하고 목표 달성 시 자기강화', ncaep: true },
+      { name: '사회적 이야기', desc: '어려운 과제 상황에서의 적절한 대처 방법을 이야기로 교수', ncaep: true },
+      { name: '이완 훈련/자기조절 전략', desc: '심호흡, 근이완, 마음챙김 등 과제 관련 불안/좌절 관리 기술 교수', ncaep: false },
+      { name: '도움 요청 기술', desc: '"모르겠어요", "다시 설명해주세요" 등 적절한 도움 요청 반응 교수', ncaep: false },
+      { name: '과제 분석/과제 세분화', desc: '복잡한 과제를 작은 단계로 분해하여 각 단계 독립 수행 교수', ncaep: true },
+      { name: '자기교시 훈련', desc: '"먼저~하고, 다음에~하면 돼" 자기 언어적 안내 전략 교수', ncaep: false },
+    ],
+    '후속결과 중재': [
+      { name: 'DRA (대체행동 차별강화)', desc: '적절한 도움 요청/과제 참여에 강화, 회피 행동에는 강화 차단', ncaep: true },
+      { name: 'DRO (타행동 차별강화)', desc: '일정 시간 과제 참여 유지(회피 미발생) 시 강화', ncaep: true },
+      { name: 'DRL (저빈도행동 차별강화)', desc: '회피 행동 빈도가 기준 이하일 때 강화. 점진적 감소 유도', ncaep: true },
+      { name: '탈출 소거', desc: '회피 행동 발생해도 과제를 제거하지 않음. 적절한 요청 시에만 휴식 제공', ncaep: true },
+      { name: '토큰 시스템', desc: '과제 참여/완수에 토큰 → 누적 시 선호 활동 교환', ncaep: true },
+      { name: 'CICO', desc: '매일 과제 참여 목표 설정 → 체크인/체크아웃으로 진전도 피드백', ncaep: false },
+      { name: '프리맥 원리', desc: '비선호 과제 완수 → 선호 활동 접근. "먼저 수학 3문제 → 태블릿 5분"', ncaep: false },
+      { name: '행동 계약', desc: '학생과 교사가 목표 행동과 강화를 서면 합의', ncaep: false },
+    ]
+  },
+  '감각자극': {
+    '선행사건 중재': [
+      { name: '감각 다이어트', desc: '하루 일과 전반에 걸쳐 체계적 감각 입력 제공 (전정, 고유수용, 촉각 등)', ncaep: false },
+      { name: '환경 수정/감각 환경 조정', desc: '조명, 소음, 자극 밀도 조정. 감각 과민 시 자극 감소, 저반응 시 자극 증가', ncaep: false },
+      { name: '자기조절 공간 (calm corner)', desc: '감각 과부하 시 이용할 수 있는 안전한 감각 조절 공간 마련', ncaep: false },
+      { name: '대체 감각 자극 제공', desc: '자해/파괴적 감각 추구 대신 동일 감각 기능의 안전한 대체물 사전 제공', ncaep: false },
+      { name: '운동 삽입', desc: '수업 중 짧은 운동/스트레칭 삽입. 감각 추구 욕구 선제적 충족', ncaep: true },
+      { name: '시각적 감각 메뉴', desc: '이용 가능한 감각 도구/활동 시각적 목록 제시. 선택적 접근 구조화', ncaep: false },
+    ],
+    '대체행동 교수': [
+      { name: 'FCT (기능적 의사소통 훈련)', desc: '"감각 도구 주세요", "쉬고 싶어요" 등 감각 욕구 의사소통 교수', ncaep: true },
+      { name: '자기점검/자기관리', desc: '감각 상태를 인식하고 적절한 감각 전략을 선택하는 기술 교수', ncaep: true },
+      { name: '대체 감각 반응 교수', desc: '손 흔들기 대신 스트레스볼, 책상 두드리기 대신 fidget tool 등 대체 행동 교수', ncaep: false },
+      { name: 'Zones of Regulation', desc: '감정/각성 수준을 색상으로 분류하고 각 zone에 맞는 조절 전략 교수', ncaep: false },
+      { name: '마음챙김/이완', desc: '호흡법, 점진적 근이완, 바디스캔 등 감각 각성 자기조절 기술 교수', ncaep: false },
+    ],
+    '후속결과 중재': [
+      { name: 'DRA (대체행동 차별강화)', desc: '적절한 감각 전략 사용에 강화, 부적절한 감각 추구 행동은 차단/전환', ncaep: true },
+      { name: '감각 소거', desc: '자동강화 행동의 감각 결과를 차단/감소시키는 환경 조작 (보호장구, 질감 변경 등)', ncaep: true },
+      { name: 'DRO', desc: '일정 시간 부적절한 감각 추구 행동 미발생 시 선호 감각 활동 제공', ncaep: true },
+      { name: '반응 중단/전환 (RIR)', desc: '상동행동 발생 시 짧게 중단시키고 다른 반응으로 전환 유도', ncaep: true },
+      { name: '토큰 시스템', desc: '적절한 감각 전략 사용 시 토큰 → 선호 감각 활동 교환', ncaep: true },
+    ]
+  },
+  '실물획득': {
+    '선행사건 중재': [
+      { name: 'First-Then 보드', desc: '"먼저~하면 그다음~할 수 있어" 시각적 제시. 원하는 물건/활동의 획득 조건 명확화', ncaep: true },
+      { name: '선택권 제공', desc: '사용 가능한 물건/활동 중 선택 기회 제공으로 통제감 증가', ncaep: false },
+      { name: 'NCR (비수반 강화)', desc: '선호 물건/활동에 일정 간격 무조건 접근 기회 제공. 결핍 상태 해소', ncaep: true },
+      { name: '거절 사전 예고', desc: '"오늘은 ○○를 쓸 수 없어요" 사전 안내 + 대안 제시', ncaep: false },
+      { name: '시각적 스케줄', desc: '언제 원하는 물건/활동에 접근할 수 있는지 시각적으로 예측 가능하게', ncaep: true },
+      { name: '풍부한 환경 제공', desc: '선호 자극이 비수반적으로 제공되는 환경 조성으로 결핍 감소', ncaep: false },
+    ],
+    '대체행동 교수': [
+      { name: 'FCT (기능적 의사소통 훈련)', desc: '"○○ 주세요", 요청 카드, PECS 활용 등 적절한 요청 행동 교수', ncaep: true },
+      { name: 'PECS/AAC', desc: '그림교환 의사소통 체계 또는 보완대체의사소통 도구로 요청 기술 교수', ncaep: true },
+      { name: '기다리기 교수', desc: '시각적 타이머 활용, 점진적 지연 시간 증가로 기다리기 기술 교수', ncaep: false },
+      { name: '거절 수용 교수', desc: '"안 돼요"를 들었을 때 적절한 대처 행동(대안 선택, 기다리기) 교수', ncaep: false },
+      { name: '비디오 모델링', desc: '적절한 요청 및 기다리기 행동을 비디오로 시연', ncaep: true },
+      { name: '사회적 이야기', desc: '나누기, 순서 지키기, 기다리기 상황의 사회적 기대를 이야기로 교수', ncaep: true },
+      { name: '협상/타협 기술', desc: '"대신 ○○는 어때요?" 등 유연한 대안 제시 기술 교수 (고기능 학습자)', ncaep: false },
+    ],
+    '후속결과 중재': [
+      { name: 'DRA', desc: '적절한 요청 행동에 원하는 물건/활동 제공, 부적절한 획득 행동에는 차단', ncaep: true },
+      { name: 'DRO', desc: '일정 시간 부적절한 획득 행동 미발생 시 선호 물건/활동 접근 기회 제공', ncaep: true },
+      { name: '소거 (획득 차단)', desc: '부적절한 행동으로는 원하는 물건/활동을 획득할 수 없도록 일관되게 차단', ncaep: true },
+      { name: '토큰 시스템', desc: '적절한 요청/기다리기에 토큰 → 선호 물건/활동과 교환', ncaep: true },
+      { name: 'CICO', desc: '하루 목표(적절한 요청 횟수) 설정 → 체크인/체크아웃 피드백', ncaep: false },
+      { name: '프리맥 원리', desc: '과제/의무 수행 후 원하는 물건/활동 접근. 자연적 강화 체계', ncaep: false },
+      { name: '지연강화 훈련', desc: '즉각 제공에서 점진적으로 지연 시간 늘리기. 충동 조절 발달 지원', ncaep: false },
+    ]
+  }
+};
+
+let selectedEBPs = [];
+
+function loadFnOptions() {
+  const fns = LS.get('functions');
+  const sel = document.getElementById('ebp-load');
+  sel.innerHTML = '<option value="">저장된 기능 선택</option>' +
+    fns.map((f, i) => `<option value="${i}">${f.student} · ${f.behavior} [${f.functions.join(', ')}]</option>`).join('');
+}
+
+function loadEBP() {
+  const idx = document.getElementById('ebp-load').value;
+  if (idx === '') return;
+  const fn = LS.get('functions')[parseInt(idx)];
+  selectedEBPs = [];
+  renderEBPList(fn.functions);
+}
+
+function renderEBPList(functions) {
+  const box = document.getElementById('ebp-list');
+  let html = '';
+
+  // Collect all unique EBPs across selected functions, grouped by category
+  const categories = ['선행사건 중재', '대체행동 교수', '후속결과 중재'];
+  const catColors = { '선행사건 중재': 'ant', '대체행동 교수': 'alt', '후속결과 중재': 'con' };
+
+  categories.forEach(cat => {
+    const items = [];
+    functions.forEach(fn => {
+      if (EBP_DB[fn] && EBP_DB[fn][cat]) {
+        EBP_DB[fn][cat].forEach(ebp => {
+          const existing = items.find(e => e.name === ebp.name);
+          if (existing) {
+            if (!existing.fns.includes(fn)) existing.fns.push(fn);
+          } else {
+            items.push({ ...ebp, fns: [fn] });
+          }
+        });
+      }
+    });
+
+    if (items.length === 0) return;
+
+    html += `<div class="ebp-cat">
+      <div class="ebp-cat-title ebp-cat-${catColors[cat]}">${cat} (${items.length}개)</div>`;
+
+    items.forEach((ebp, i) => {
+      const id = `${cat}-${i}`;
+      const sel = selectedEBPs.find(s => s.name === ebp.name) ? 'selected' : '';
+      html += `<div class="ebp-item ${sel}" onclick="toggleEBP('${ebp.name}', '${cat}', this)">
+        <div>
+          <span class="ebp-name">${ebp.name}</span>
+          ${ebp.ncaep ? '<span class="badge" style="background:#d5f5e3;color:#1e8449;margin-left:4px">NCAEP</span>' : ''}
+          <div class="ebp-badges">${ebp.fns.map(f => `<span class="badge fn-badge-${fnKey(f)}">${f}</span>`).join('')}</div>
+        </div>
+      </div>
+      <div class="ebp-detail" id="detail-${cat}-${i}" style="display:none">${ebp.desc}</div>`;
+    });
+    html += '</div>';
+  });
+
+  box.innerHTML = html || '<div class="empty-msg">선택된 기능이 없습니다.</div>';
+
+  // Make items toggleable for detail
+  document.querySelectorAll('.ebp-item').forEach(item => {
+    item.addEventListener('dblclick', function() {
+      const detail = this.nextElementSibling;
+      if (detail && detail.classList.contains('ebp-detail')) {
+        detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+  });
+}
+
+function toggleEBP(name, cat, el) {
+  const idx = selectedEBPs.findIndex(s => s.name === name);
+  if (idx >= 0) {
+    selectedEBPs.splice(idx, 1);
+    el.classList.remove('selected');
+  } else {
+    selectedEBPs.push({ name, category: cat });
+    el.classList.add('selected');
+  }
+  updateEBPSummary();
+}
+
+function updateEBPSummary() {
+  const box = document.getElementById('ebp-selected-summary');
+  const content = document.getElementById('ebp-selected-content');
+  if (!selectedEBPs.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const grouped = {};
+  selectedEBPs.forEach(e => {
+    if (!grouped[e.category]) grouped[e.category] = [];
+    grouped[e.category].push(e.name);
+  });
+  content.innerHTML = Object.entries(grouped).map(([cat, names]) =>
+    `<div style="margin-bottom:8px"><strong>${cat}:</strong> ${names.join(', ')}</div>`
+  ).join('');
+}
+
+function sendToBIP() {
+  showTab(3);
+  // Auto-fill BIP intervention sections
+  const grouped = {};
+  selectedEBPs.forEach(e => {
+    if (!grouped[e.category]) grouped[e.category] = [];
+    grouped[e.category].push(e.name);
+  });
+  const fnData = LS.get('functions');
+  const idx = document.getElementById('ebp-load').value;
+  if (idx !== '') {
+    const fn = fnData[parseInt(idx)];
+    document.getElementById('bip-stu').value = fn.student;
+    // Fill function badges
+    document.getElementById('bip-functions').innerHTML = fn.functions.map(f =>
+      `<span class="badge fn-badge-${fnKey(f)}">${f}</span>`
+    ).join(' ');
+    // Auto-fill CBM problem behavior from function selection
+    if (!document.getElementById('cbm-problem').value) {
+      document.getElementById('cbm-problem').value = fn.behavior;
+    }
+  }
+  // Fill intervention sections
+  ['bip-int-ant','bip-int-alt','bip-int-con'].forEach(id => document.getElementById(id).innerHTML = '');
+  if (grouped['선행사건 중재']) {
+    document.getElementById('bip-int-ant').innerHTML = grouped['선행사건 중재'].map(n => `<div class="badge" style="background:var(--blue-l);color:var(--blue);margin:2px;padding:4px 8px">${n}</div>`).join('');
+  }
+  if (grouped['대체행동 교수']) {
+    document.getElementById('bip-int-alt').innerHTML = grouped['대체행동 교수'].map(n => `<div class="badge" style="background:var(--pri-l);color:var(--pri);margin:2px;padding:4px 8px">${n}</div>`).join('');
+  }
+  if (grouped['후속결과 중재']) {
+    document.getElementById('bip-int-con').innerHTML = grouped['후속결과 중재'].map(n => `<div class="badge" style="background:var(--acc-l);color:var(--acc);margin:2px;padding:4px 8px">${n}</div>`).join('');
+  }
+  document.getElementById('bip-date').value = new Date().toISOString().split('T')[0];
+}
+
+function cbmToIntervention() {
+  // Push CBM strategy mapping content into the intervention sections
+  const antVal = document.getElementById('cbm-strat-ant').value.trim();
+  const teachVal = document.getElementById('cbm-strat-teach').value.trim();
+  const conVal = document.getElementById('cbm-strat-con').value.trim();
+
+  if (antVal) {
+    const cur = document.getElementById('bip-int-ant-custom').value;
+    document.getElementById('bip-int-ant-custom').value = cur ? cur + '\n\n[CBM] ' + antVal : '[CBM] ' + antVal;
+  }
+  if (teachVal) {
+    const cur = document.getElementById('bip-int-alt-custom').value;
+    document.getElementById('bip-int-alt-custom').value = cur ? cur + '\n\n[CBM] ' + teachVal : '[CBM] ' + teachVal;
+  }
+  if (conVal) {
+    const cur = document.getElementById('bip-int-con-custom').value;
+    document.getElementById('bip-int-con-custom').value = cur ? cur + '\n\n[CBM] ' + conVal : '[CBM] ' + conVal;
+  }
+
+  // Also auto-fill CBM diagram from FBA fields if empty
+  if (!document.getElementById('cbm-antecedent').value && document.getElementById('bip-antecedent').value) {
+    document.getElementById('cbm-antecedent').value = document.getElementById('bip-antecedent').value;
+  }
+  if (!document.getElementById('cbm-problem').value && document.getElementById('bip-target').value) {
+    document.getElementById('cbm-problem').value = document.getElementById('bip-target').value;
+  }
+  if (!document.getElementById('cbm-maintaining').value && document.getElementById('bip-consequence').value) {
+    document.getElementById('cbm-maintaining').value = document.getElementById('bip-consequence').value;
+  }
+
+  alert('CBM 전략이 아래 중재 방법 섹션에 반영되었습니다.');
+
+  // Scroll to intervention section
+  document.querySelector('[class*="bip-section-title"]').scrollIntoView && 
+    document.getElementById('bip-int-ant-custom').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ═══════════════════════════════════════
+// TAB 4: BIP 저장/불러오기
+// ═══════════════════════════════════════
+function saveBIP() {
+  const stu = document.getElementById('bip-stu').value.trim();
+  if (!stu) return alert('학생 이름을 입력하세요.');
+
+  const bip = {
+    id: Date.now(),
+    student: stu,
+    date: document.getElementById('bip-date').value,
+    class: document.getElementById('bip-class').value,
+    author: document.getElementById('bip-author').value,
+    team: document.getElementById('bip-team').value,
+    target: document.getElementById('bip-target').value,
+    baseline: document.getElementById('bip-baseline').value,
+    functions: document.getElementById('bip-functions').innerHTML,
+    antecedent: document.getElementById('bip-antecedent').value,
+    consequence: document.getElementById('bip-consequence').value,
+    hypothesis: document.getElementById('bip-hypothesis').value,
+    cbmDesired: document.getElementById('cbm-desired').value,
+    cbmDesiredResult: document.getElementById('cbm-desired-result').value,
+    cbmAntecedent: document.getElementById('cbm-antecedent').value,
+    cbmProblem: document.getElementById('cbm-problem').value,
+    cbmMaintaining: document.getElementById('cbm-maintaining').value,
+    cbmAlternative: document.getElementById('cbm-alternative').value,
+    cbmAltResult: document.getElementById('cbm-alt-result').value,
+    cbmStratAnt: document.getElementById('cbm-strat-ant').value,
+    cbmStratTeach: document.getElementById('cbm-strat-teach').value,
+    cbmStratCon: document.getElementById('cbm-strat-con').value,
+    reinforcers: document.getElementById('bip-reinf').value,
+    schedule: document.getElementById('bip-schedule').value,
+    goalShort: document.getElementById('bip-goal-short').value,
+    goalLong: document.getElementById('bip-goal-long').value,
+    intAnt: document.getElementById('bip-int-ant').innerHTML,
+    intAntCustom: document.getElementById('bip-int-ant-custom').value,
+    intAlt: document.getElementById('bip-int-alt').innerHTML,
+    intAltCustom: document.getElementById('bip-int-alt-custom').value,
+    intCon: document.getElementById('bip-int-con').innerHTML,
+    intConCustom: document.getElementById('bip-int-con-custom').value,
+    crisis1: document.getElementById('bip-crisis-1').value,
+    crisis2: document.getElementById('bip-crisis-2').value,
+    crisis3: document.getElementById('bip-crisis-3').value,
+    crisis4: document.getElementById('bip-crisis-4').value,
+    measure: document.getElementById('bip-measure').value,
+    review: document.getElementById('bip-review').value,
+    criteria: document.getElementById('bip-criteria').value,
+  };
+
+  const bips = LS.get('bips');
+  bips.push(bip);
+  LS.set('bips', bips);
+  alert('BIP가 저장되었습니다.');
+  loadBIPList();
+}
+
+function loadBIPList() {
+  const bips = LS.get('bips');
+  const box = document.getElementById('bip-saved-list');
+  if (!bips.length) { box.innerHTML = ''; return; }
+  box.innerHTML = bips.map(b => {
+    const d = b.date || new Date(b.id).toLocaleDateString('ko-KR');
+    return `<div class="hist-item">
+      <div><strong>${b.student}</strong> · ${d}<br><span style="font-size:11px;color:var(--sub)">${b.target ? b.target.substring(0, 40) + '...' : ''}</span></div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-out btn-sm" onclick="loadBIP(${b.id})">불러오기</button>
+        <span class="hist-del" onclick="deleteBIP(${b.id})">×</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadBIP(id) {
+  const bip = LS.get('bips').find(b => b.id === id);
+  if (!bip) return;
+  document.getElementById('bip-stu').value = bip.student || '';
+  document.getElementById('bip-date').value = bip.date || '';
+  document.getElementById('bip-class').value = bip.class || '';
+  document.getElementById('bip-author').value = bip.author || '';
+  document.getElementById('bip-team').value = bip.team || '';
+  document.getElementById('bip-target').value = bip.target || '';
+  document.getElementById('bip-baseline').value = bip.baseline || '';
+  document.getElementById('bip-functions').innerHTML = bip.functions || '';
+  document.getElementById('bip-antecedent').value = bip.antecedent || '';
+  document.getElementById('bip-consequence').value = bip.consequence || '';
+  document.getElementById('bip-hypothesis').value = bip.hypothesis || '';
+  document.getElementById('cbm-desired').value = bip.cbmDesired || '';
+  document.getElementById('cbm-desired-result').value = bip.cbmDesiredResult || '';
+  document.getElementById('cbm-antecedent').value = bip.cbmAntecedent || '';
+  document.getElementById('cbm-problem').value = bip.cbmProblem || '';
+  document.getElementById('cbm-maintaining').value = bip.cbmMaintaining || '';
+  document.getElementById('cbm-alternative').value = bip.cbmAlternative || '';
+  document.getElementById('cbm-alt-result').value = bip.cbmAltResult || '';
+  document.getElementById('cbm-strat-ant').value = bip.cbmStratAnt || '';
+  document.getElementById('cbm-strat-teach').value = bip.cbmStratTeach || '';
+  document.getElementById('cbm-strat-con').value = bip.cbmStratCon || '';
+  document.getElementById('bip-reinf').value = bip.reinforcers || '';
+  document.getElementById('bip-schedule').value = bip.schedule || '';
+  document.getElementById('bip-goal-short').value = bip.goalShort || '';
+  document.getElementById('bip-goal-long').value = bip.goalLong || '';
+  document.getElementById('bip-int-ant').innerHTML = bip.intAnt || '';
+  document.getElementById('bip-int-ant-custom').value = bip.intAntCustom || '';
+  document.getElementById('bip-int-alt').innerHTML = bip.intAlt || '';
+  document.getElementById('bip-int-alt-custom').value = bip.intAltCustom || '';
+  document.getElementById('bip-int-con').innerHTML = bip.intCon || '';
+  document.getElementById('bip-int-con-custom').value = bip.intConCustom || '';
+  document.getElementById('bip-crisis-1').value = bip.crisis1 || '';
+  document.getElementById('bip-crisis-2').value = bip.crisis2 || '';
+  document.getElementById('bip-crisis-3').value = bip.crisis3 || '';
+  document.getElementById('bip-crisis-4').value = bip.crisis4 || '';
+  document.getElementById('bip-measure').value = bip.measure || '빈도';
+  document.getElementById('bip-review').value = bip.review || '주1회';
+  document.getElementById('bip-criteria').value = bip.criteria || '';
+}
+
+function deleteBIP(id) {
+  if (!confirm('이 BIP를 삭제하시겠습니까?')) return;
+  LS.set('bips', LS.get('bips').filter(b => b.id !== id));
+  loadBIPList();
+}
+
+function exportBIPPdf() {
+  const stu = document.getElementById('bip-stu').value || '학생';
+  const date = document.getElementById('bip-date').value || new Date().toISOString().split('T')[0];
+  
+  // BIP 내용을 깔끔한 인쇄용 HTML로 생성
+  const getValue = id => document.getElementById(id)?.value || '';
+  const getFnBadges = () => {
+    const badges = [];
+    document.querySelectorAll('#bip-functions .badge').forEach(b => badges.push(b.textContent.trim()));
+    return badges.join(', ') || '(미선택)';
+  };
+  
+  const printHtml = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>BIP_${stu}_${date}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Noto Sans KR',sans-serif;padding:20px;font-size:12px;color:#222;line-height:1.8}
+  h1{font-size:18px;text-align:center;margin-bottom:4px;color:#2c2c2c}
+  .subtitle{text-align:center;font-size:11px;color:#777;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #4a6741}
+  .section{margin-bottom:16px}
+  .section-title{font-size:13px;font-weight:700;color:#4a6741;border-left:4px solid #4a6741;padding-left:8px;margin-bottom:8px}
+  .row{display:flex;gap:16px;margin-bottom:4px}
+  .row .label{font-weight:600;min-width:80px;color:#555}
+  .content{white-space:pre-wrap;padding:6px 0}
+  .cbm-box{border:1px solid #ccc;border-radius:6px;padding:10px;margin:8px 0;background:#fafafa}
+  .cbm-title{font-weight:600;font-size:11px;margin-bottom:4px}
+  .strat-box{padding:8px;margin:4px 0;border-radius:4px}
+  .strat-ant{background:#e4f0f6;border-left:3px solid #2e6b8a}
+  .strat-teach{background:#e8efe6;border-left:3px solid #4a6741}
+  .strat-con{background:#fdf0e8;border-left:3px solid #c96b3c}
+  .crisis{padding:6px 8px;margin:4px 0;border-radius:4px;font-size:11px}
+  .c1{background:#e8f8f5;border-left:3px solid #1abc9c}
+  .c2{background:#fef9e7;border-left:3px solid #f1c40f}
+  .c3{background:#fdebd0;border-left:3px solid #e67e22}
+  .c4{background:#fdecea;border-left:3px solid #c0392b}
+  .footer{margin-top:20px;padding-top:10px;border-top:1px solid #ddd;font-size:10px;color:#999;text-align:center}
+  @media print{body{padding:10px}@page{margin:15mm}}
+</style>
+</head>
+<body>
+  <h1>행동중재계획 (BIP)</h1>
+  <div class="subtitle">${stu} | ${date}</div>
+  
+  <div class="section">
+    <div class="section-title">1. 기본 정보</div>
+    <div class="row"><span class="label">학생:</span> ${getValue('bip-stu')}</div>
+    <div class="row"><span class="label">학급:</span> ${getValue('bip-class')}</div>
+    <div class="row"><span class="label">작성자:</span> ${getValue('bip-author')}</div>
+    <div class="row"><span class="label">작성일:</span> ${getValue('bip-date')}</div>
+    <div class="row"><span class="label">팀 구성원:</span> ${getValue('bip-team')}</div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">2. 목표 행동 조작적 정의</div>
+    <div class="content">${getValue('bip-target')}</div>
+    <div class="row" style="margin-top:6px"><span class="label">현재 수준:</span> ${getValue('bip-baseline')}</div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">3. FBA 결과 요약</div>
+    <div class="row"><span class="label">행동의 기능:</span> ${getFnBadges()}</div>
+    <div class="row"><span class="label">선행사건:</span></div>
+    <div class="content">${getValue('bip-antecedent')}</div>
+    <div class="row"><span class="label">후속결과:</span></div>
+    <div class="content">${getValue('bip-consequence')}</div>
+    <div class="row"><span class="label">가설 진술:</span></div>
+    <div class="content">${getValue('bip-hypothesis')}</div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">3.5 경쟁행동모델 (CBM)</div>
+    <div class="cbm-box">
+      <div class="row"><span class="label">선행사건:</span> ${getValue('cbm-antecedent')}</div>
+      <div class="row"><span class="label">문제행동:</span> ${getValue('cbm-problem')}</div>
+      <div class="row"><span class="label">유지결과:</span> ${getValue('cbm-maintaining')}</div>
+      <div class="row"><span class="label">바람직한 행동:</span> ${getValue('cbm-desired')}</div>
+      <div class="row"><span class="label">바람직한 결과:</span> ${getValue('cbm-desired-result')}</div>
+      <div class="row"><span class="label">대안행동:</span> ${getValue('cbm-alternative')}</div>
+      <div class="row"><span class="label">대안적 결과:</span> ${getValue('cbm-alt-result')}</div>
+    </div>
+    <div class="strat-box strat-ant"><strong>선행사건 중재:</strong> ${getValue('cbm-strat-ant')}</div>
+    <div class="strat-box strat-teach"><strong>교수 전략:</strong> ${getValue('cbm-strat-teach')}</div>
+    <div class="strat-box strat-con"><strong>후속결과 전략:</strong> ${getValue('cbm-strat-con')}</div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">5. 강화제 정보</div>
+    <div class="content">${getValue('bip-reinf')}</div>
+    <div class="row"><span class="label">강화 스케줄:</span> ${getValue('bip-schedule')}</div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">6. 목표 설정</div>
+    <div class="row"><span class="label">단기 목표:</span></div>
+    <div class="content">${getValue('bip-goal-short')}</div>
+    <div class="row"><span class="label">장기 목표:</span></div>
+    <div class="content">${getValue('bip-goal-long')}</div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">7. 중재 방법</div>
+    <div class="strat-box strat-ant"><strong>선행사건 중재 (예방):</strong><br>${getValue('bip-int-ant-custom') || '(EBP에서 선택된 중재 참조)'}</div>
+    <div class="strat-box strat-teach"><strong>대체행동 교수:</strong><br>${getValue('bip-int-alt-custom') || '(EBP에서 선택된 중재 참조)'}</div>
+    <div class="strat-box strat-con"><strong>후속결과 중재:</strong><br>${getValue('bip-int-con-custom') || '(EBP에서 선택된 중재 참조)'}</div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">8. 위기 관리 계획</div>
+    <div class="crisis c1"><strong>🟢 1단계 (예방):</strong> ${getValue('bip-crisis-1')}</div>
+    <div class="crisis c2"><strong>🟡 2단계 (완화):</strong> ${getValue('bip-crisis-2')}</div>
+    <div class="crisis c3"><strong>🟠 3단계 (대처):</strong> ${getValue('bip-crisis-3')}</div>
+    <div class="crisis c4"><strong>🔴 4단계 (회복):</strong> ${getValue('bip-crisis-4')}</div>
+  </div>
+  
+  <div class="section">
+    <div class="section-title">9. 데이터 수집 및 검토 계획</div>
+    <div class="row"><span class="label">측정 방법:</span> ${getValue('bip-measure')}</div>
+    <div class="row"><span class="label">검토 주기:</span> ${getValue('bip-review')}</div>
+    <div class="row"><span class="label">검토 기준:</span></div>
+    <div class="content">${getValue('bip-criteria')}</div>
+  </div>
+  
+  <div class="footer">본 문서는 FBA→BIP 데이터 도구(뜨온)에서 생성되었습니다.</div>
+  
+  <script>window.onload=function(){window.print();}<\/script>
+</body>
+</html>`;
+  
+  const confirmed = confirm(
+    '⚠️ 개인정보 보호 안내\n\n'
+    + '이 문서에는 학생의 이름, 행동 특성, 장애 관련 정보 등\n'
+    + '민감한 개인정보가 포함되어 있습니다.\n\n'
+    + '• 저장된 PDF는 잠금 설정된 기기에 보관해 주세요\n'
+    + '• 메신저·이메일 전송 시 수신자를 반드시 확인해 주세요\n'
+    + '• 불필요해진 파일은 완전히 삭제해 주세요\n'
+    + '• 개인정보보호법 제23조에 따라 민감정보는\n'
+    + '  별도 동의 없이 제3자에게 제공할 수 없습니다\n\n'
+    + 'PDF로 내보내시겠습니까?'
+  );
+  if (!confirmed) return;
+
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+  } else {
+    alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+  }
+}
+
+// ═══════════════════════════════════════
+// TAB 5: 효과 그래프
+// ═══════════════════════════════════════
+let graphData = null;
+let chartInstance = null;
+
+function showGraphMode(mode) {
+  document.getElementById('graph-manual').style.display = mode === 'manual' ? 'block' : 'none';
+  document.getElementById('graph-auto').style.display = mode === 'auto' ? 'block' : 'none';
+  document.querySelectorAll('#sec-4 .sub-tab').forEach((t, i) => {
+    t.classList.toggle('active', (mode === 'manual' && i === 0) || (mode === 'auto' && i === 1));
+  });
+}
+
+function updatePhaseInputs() {
+  const design = document.getElementById('gr-design').value;
+  const box = document.getElementById('phase-inputs');
+  let phases = [];
+  if (design === 'AB') phases = ['A (기초선)', 'B (중재)'];
+  else if (design === 'ABAB') phases = ['A₁ (기초선)', 'B₁ (중재)', 'A₂ (기초선 복귀)', 'B₂ (중재 재도입)'];
+  else phases = ['행동1-A', '행동1-B', '행동2-A', '행동2-B'];
+
+  box.innerHTML = phases.map((p, i) => `
+    <div class="card" style="margin-top:8px">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">
+        <span class="phase-tag phase-${p.includes('A') || p.includes('기초') ? 'a' : 'b'}">${p}</span>
+      </div>
+      <div class="fg"><label>데이터 (쉼표로 구분)</label>
+        <input type="text" id="phase-data-${i}" placeholder="예: 5, 7, 4, 8, 6">
+      </div>
+    </div>
+  `).join('');
+}
+
+function drawGraph() {
+  const stu = document.getElementById('gr-stu').value.trim();
+  const beh = document.getElementById('gr-beh').value.trim();
+  const unit = document.getElementById('gr-unit').value;
+  const design = document.getElementById('gr-design').value;
+
+  // Collect phase data
+  const phaseInputs = document.querySelectorAll('[id^="phase-data-"]');
+  const phases = [];
+  phaseInputs.forEach((input, i) => {
+    const vals = input.value.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    if (vals.length > 0) {
+      const isBaseline = i % 2 === 0;
+      phases.push({
+        label: input.closest('.card').querySelector('.phase-tag').textContent,
+        data: vals,
+        isBaseline
+      });
+    }
+  });
+
+  if (phases.length < 2) return alert('최소 2개 구간의 데이터를 입력하세요.');
+
+  graphData = { student: stu, behavior: beh, unit, design, phases, date: new Date().toISOString() };
+  renderGraph(graphData);
+}
+
+function renderGraph(data) {
+  const box = document.getElementById('graph-box');
+  box.style.display = 'block';
+  const canvas = document.getElementById('graph-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Destroy previous chart
+  if (chartInstance) { chartInstance = null; }
+
+  // Build continuous data array with phase boundaries
+  let allData = [];
+  let phaseBounds = [];
+  let cumIdx = 0;
+  data.phases.forEach(p => {
+    phaseBounds.push({ start: cumIdx, end: cumIdx + p.data.length - 1, label: p.label, isBaseline: p.isBaseline });
+    p.data.forEach(v => { allData.push({ x: cumIdx, y: v, phase: p.label }); cumIdx++; });
+  });
+
+  // Set canvas size
+  const w = canvas.parentElement.clientWidth - 32;
+  const h = Math.min(350, w * 0.6);
+  canvas.width = w * 2; canvas.height = h * 2;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  ctx.scale(2, 2);
+
+  // Calculate bounds
+  const maxY = Math.max(...allData.map(d => d.y)) * 1.2 || 10;
+  const minY = 0;
+  const padL = 50, padR = 20, padT = 30, padB = 40;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+
+  const xScale = (i) => padL + (i / (allData.length - 1 || 1)) * plotW;
+  const yScale = (v) => padT + plotH - ((v - minY) / (maxY - minY)) * plotH;
+
+  // Clear
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid
+  ctx.strokeStyle = '#e8e8e0';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 5; i++) {
+    const y = padT + (plotH / 5) * i;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.fillStyle = '#999'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxY - (maxY / 5) * i), padL - 8, y + 4);
+  }
+
+  // Phase dividers
+  phaseBounds.forEach((pb, idx) => {
+    if (idx > 0) {
+      const x = xScale(pb.start) - (xScale(1) - xScale(0)) / 2;
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + plotH); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // Phase label
+    const cx = (xScale(pb.start) + xScale(pb.end)) / 2;
+    ctx.fillStyle = pb.isBaseline ? '#2e86c1' : '#1e8449';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(pb.label, cx, padT - 10);
+  });
+
+  // Draw lines per phase
+  const colors = { true: '#2e86c1', false: '#1e8449' };
+  phaseBounds.forEach(pb => {
+    ctx.strokeStyle = colors[pb.isBaseline];
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = pb.start; i <= pb.end; i++) {
+      const x = xScale(i), y = yScale(allData[i].y);
+      if (i === pb.start) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Data points
+    for (let i = pb.start; i <= pb.end; i++) {
+      const x = xScale(i), y = yScale(allData[i].y);
+      ctx.fillStyle = colors[pb.isBaseline];
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Phase mean line
+    const mean = pb.isBaseline ? null : null; // Draw for all
+    const phaseData = allData.slice(pb.start, pb.end + 1);
+    const avg = phaseData.reduce((s, d) => s + d.y, 0) / phaseData.length;
+    ctx.strokeStyle = colors[pb.isBaseline];
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(xScale(pb.start), yScale(avg));
+    ctx.lineTo(xScale(pb.end), yScale(avg));
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // X axis labels
+  ctx.fillStyle = '#999'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+  allData.forEach((d, i) => {
+    if (allData.length <= 20 || i % Math.ceil(allData.length / 15) === 0) {
+      ctx.fillText(i + 1, xScale(i), padT + plotH + 18);
+    }
+  });
+
+  // Axis labels
+  ctx.fillStyle = '#666'; ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`회기`, w / 2, h - 4);
+  ctx.save(); ctx.translate(12, h / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText(data.unit, 0, 0); ctx.restore();
+
+  // Stats
+  renderGraphStats(data);
+}
+
+function renderGraphStats(data) {
+  const box = document.getElementById('graph-stats');
+  let html = '';
+  data.phases.forEach(p => {
+    const avg = (p.data.reduce((s, v) => s + v, 0) / p.data.length).toFixed(1);
+    const trend = p.data.length >= 2 ? ((p.data[p.data.length - 1] - p.data[0]) / p.data[0] * 100).toFixed(1) : 0;
+    html += `<div class="stat-card">
+      <div class="stat-val">${avg}</div>
+      <div class="stat-label">${p.label} 평균 (${data.unit})</div>
+      <div style="font-size:11px;color:${parseFloat(trend) <= 0 ? '#27ae60' : '#c0392b'}">${trend > 0 ? '+' : ''}${trend}% 변화</div>
+    </div>`;
+  });
+
+  // Overall change
+  if (data.phases.length >= 2) {
+    const baseAvg = data.phases[0].data.reduce((s, v) => s + v, 0) / data.phases[0].data.length;
+    const intAvg = data.phases[data.phases.length - 1].data.reduce((s, v) => s + v, 0) / data.phases[data.phases.length - 1].data.length;
+    const change = ((intAvg - baseAvg) / baseAvg * 100).toFixed(1);
+    html += `<div class="stat-card" style="border:2px solid var(--pri)">
+      <div class="stat-val" style="color:${parseFloat(change) <= 0 ? '#27ae60' : '#c0392b'}">${change > 0 ? '+' : ''}${change}%</div>
+      <div class="stat-label">기초선 대비 전체 변화</div>
+    </div>`;
+  }
+  box.innerHTML = html;
+}
+
+function loadAutoStudents() {
+  const records = LS.get('records');
+  const students = [...new Set(records.map(r => r.student))];
+  const sel = document.getElementById('gr-auto-stu');
+  sel.innerHTML = '<option value="">선택</option>' + students.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+function drawAutoGraph() {
+  const stu = document.getElementById('gr-auto-stu').value;
+  const startDate = document.getElementById('gr-auto-start').value;
+  if (!stu || !startDate) return alert('학생과 중재 시작일을 선택하세요.');
+
+  const records = LS.get('records').filter(r => r.student === stu && r.type === 'freq');
+  if (records.length < 3) return alert('빈도 기록이 3개 이상 필요합니다.');
+
+  records.sort((a, b) => new Date(a.date) - new Date(b.date));
+  const start = new Date(startDate);
+
+  const baseData = records.filter(r => new Date(r.date) < start).map(r => r.count);
+  const intData = records.filter(r => new Date(r.date) >= start).map(r => r.count);
+
+  if (baseData.length === 0 || intData.length === 0) return alert('기초선과 중재 구간 모두에 데이터가 필요합니다.');
+
+  const data = {
+    student: stu, behavior: records[0].behavior || stu, unit: '회',
+    design: 'AB',
+    phases: [
+      { label: 'A (기초선)', data: baseData, isBaseline: true },
+      { label: 'B (중재)', data: intData, isBaseline: false }
+    ]
+  };
+
+  graphData = data;
+  renderGraph(data);
+}
+
+function exportGraphCSV() {
+  if (!graphData) return;
+  const rows = [['회기', '값', '구간']];
+  let idx = 1;
+  graphData.phases.forEach(p => {
+    p.data.forEach(v => { rows.push([idx++, v, p.label]); });
+  });
+  const csv = '\uFEFF' + rows.map(r => r.join(',')).join('\n');
+  downloadFile(csv, `graph_${graphData.student || 'data'}.csv`, 'text/csv');
+}
+
+function saveGraphImage() {
+  const canvas = document.getElementById('graph-canvas');
+  const link = document.createElement('a');
+  link.download = `graph_${graphData?.student || 'data'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function loadSavedGraphs() {
+  // Placeholder for saved graphs
+}
+
+// ═══════════════════════════════════════
+// 상황이야기 연결
+// ═══════════════════════════════════════
+function openSocialStory() {
+  // BIP에서 선택된 기능가설 정보 수집
+  const fnEls = document.getElementById('bip-functions');
+  const functions = [];
+  if (fnEls) {
+    fnEls.querySelectorAll('.badge').forEach(b => functions.push(b.textContent.trim()));
+  }
+  const student = document.getElementById('bip-stu')?.value?.trim() || '';
+  
+  // 기능 → 상황이야기 템플릿 추천 매핑
+  const fnToTemplates = {
+    '관심끌기': ['적절하게 관심 받기', '차례 기다리기', '친구 존중하기 (신체)'],
+    '회피/탈출': ['활동 전환하기', '도움 요청하기', '새로운 활동 참여하기'],
+    '감각자극': ['목소리 크기 조절', '자리에 앉아있기', '감각 도구 사용하기'],
+    '실물획득': ['차례 기다리기', '나누어 쓰기', '도움 요청하기']
+  };
+  
+  let recommended = [];
+  functions.forEach(fn => {
+    if (fnToTemplates[fn]) recommended.push(...fnToTemplates[fn]);
+  });
+  recommended = [...new Set(recommended)];
+  
+  // URL 파라미터로 정보 전달
+  const params = new URLSearchParams();
+  if (student) params.set('student', student);
+  if (functions.length) params.set('functions', functions.join(','));
+  if (recommended.length) params.set('templates', recommended.join(','));
+  
+  // 돌아올 수 있도록 "from=bip" 표시
+  params.set('from', 'bip');
+  
+  // TWA/PWA 환경: 같은 창 내에서 네비게이션
+  const ssUrl = 'social-story.html' + (params.toString() ? '?' + params.toString() : '');
+  window.location.href = ssUrl;
+}
+
+// BIP 탭 진입 시 기능가설 태그 업데이트
+function updateSSFnTags() {
+  const container = document.getElementById('ss-fn-tags');
+  if (!container) return;
+  
+  const fnEls = document.getElementById('bip-functions');
+  const functions = [];
+  if (fnEls) {
+    fnEls.querySelectorAll('.badge').forEach(b => functions.push(b.textContent.trim()));
+  }
+  
+  if (functions.length === 0) {
+    container.innerHTML = '<div style="font-size:11px;color:var(--sub)">② 기능선택에서 기능을 먼저 선택해주세요</div>';
+    return;
+  }
+  
+  const fnToTemplates = {
+    '관심끌기': ['적절하게 관심 받기', '차례 기다리기'],
+    '회피/탈출': ['활동 전환하기', '도움 요청하기'],
+    '감각자극': ['목소리 크기 조절', '자리에 앉아있기'],
+    '실물획득': ['차례 기다리기', '나누어 쓰기']
+  };
+  
+  let html = '<div style="font-size:11px;color:var(--sub);margin-bottom:4px">감지된 기능 → 추천 템플릿:</div>';
+  functions.forEach(fn => {
+    const cls = fn === '관심끌기' ? 'fn-badge-attn' : fn === '회피/탈출' ? 'fn-badge-esc' : fn === '감각자극' ? 'fn-badge-sens' : 'fn-badge-tang';
+    const templates = fnToTemplates[fn] || [];
+    html += `<span class="badge ${cls}" style="margin:2px">${fn}</span>`;
+    if (templates.length) {
+      html += `<span style="font-size:11px;color:var(--sub)"> → ${templates.join(', ')}</span><br>`;
+    }
+  });
+  container.innerHTML = html;
+}
+
+// 기존 showTab 함수 확장: BIP 탭 진입 시 SS 태그 업데이트
+const _origShowTab = showTab;
+showTab = function(i) {
+  _origShowTab(i);
+  if (i === 3) updateSSFnTags();
+};
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.getElementById('abc-dt').value = new Date().toISOString().slice(0, 16);
+updatePhaseInputs();
+renderHistory();
+
+// ═══════════════════════════════════════
+// PWA: Service Worker 등록
+// ═══════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// 안드로이드 TWA: 뒤로가기 처리 (sec-3 BIP 탭에서 뒤로가기 누르면 안내)
+// 기본 동작은 브라우저 히스토리 따라감 — social-story.html에서 돌아오면 BIP 탭(3)으로 자동 진입
+if (location.hash === '#bip') {
+  showTab(3);
+}
+</script>
+</body>
+</html>

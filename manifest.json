@@ -12,53 +12,18 @@
   "theme_color": "#3a5334",
   "categories": ["education", "productivity"],
   "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-maskable-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icons/icon-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    {
-      "name": "행동 기록",
-      "short_name": "기록",
-      "description": "빈도/지속시간/ABC 행동 기록 시작",
-      "url": "./index.html#record",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "BIP 작성",
-      "short_name": "BIP",
-      "description": "행동중재계획 작성 화면 바로가기",
-      "url": "./index.html#bip",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "상황이야기",
-      "short_name": "이야기",
-      "description": "사회적 상황이야기 제작 도구",
-      "url": "./social-story.html",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    }
+    { "name": "행동 기록", "short_name": "기록", "url": "./index.html#record",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "BIP 작성", "short_name": "BIP", "url": "./index.html#bip",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "상황이야기", "short_name": "이야기", "url": "./social-story.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ],
   "prefer_related_applications": false
 }

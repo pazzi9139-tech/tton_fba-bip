@@ -240,13 +240,53 @@ canvas{width:100%!important;max-height:400px}
 
 <!-- ══════ TAB 2: 기능 선택 ══════ -->
 <div class="section active" id="sec-1">
-  <div class="card">
+  <!-- 1. 기본 정보 -->
+<div class="card">
+  <div class="bip-section">
+    <div class="bip-section-title">1. 기본 정보</div>
+    <div class="row">
+      <div class="fg"><label>학생 이름</label><input type="text" id="fn-stu2" placeholder="학생 이름"></div>
+      <div class="fg"><label>작성일</label><input type="date" id="fn-date"></div>
+    </div>
+    <div class="row">
+      <div class="fg"><label>학년/학급</label><input type="text" id="fn-class" placeholder="예: 3학년 해바라기반"></div>
+      <div class="fg"><label>작성자</label><input type="text" id="fn-author" placeholder="작성자 이름"></div>
+    </div>
+    <div class="fg"><label>팀 구성원</label><input type="text" id="fn-team" placeholder="예: 담임, 특수교사, 보조원, 보호자"></div>
+  </div>
+</div>
+
+<!-- 2. 목표 행동 조작적 정의 -->
+<div class="card">
+  <div class="bip-section">
+    <div class="bip-section-title">2. 목표 행동</div>
+    <div class="fg"><label>도전행동</label><textarea id="fn-target" placeholder="관찰 가능하고 측정 가능한 용어로 기술&#10;예: 교사의 지시 후 5초 이내에 과제물을 바닥에 던지거나 찢는 행동"></textarea></div>
+    <div class="fg"><label>현재 수준 (기초선)</label><textarea id="fn-baseline" placeholder="예: 하루 평균 4.2회, 주로 국어/수학 시간에 발생"></textarea></div>
+  </div>
+</div>
+
+<!-- 3. FBA 결과 요약 -->
+<div class="card">
+  <div class="bip-section">
+    <div class="bip-section-title">3. FBA 결과 요약</div>
+    <div class="fg"><label>선행사건 (배경/직전)</label><textarea id="fn-antecedent" placeholder="배경사건: 수면 부족, 아침 결식&#10;직전 선행사건: 어려운 과제 제시, 선호활동 중단 요구"></textarea></div>
+    <div class="fg"><label>후속결과 (유지 변인)</label><textarea id="fn-consequence" placeholder="과제 제거/지연, 또래 관심, 감각 자극 획득 등"></textarea></div>
+    <div class="fg"><label>가설 진술</label><textarea id="fn-hypothesis" placeholder="[선행사건]이 있을 때 [학생]은 [행동]을 하며, 그 결과 [기능]을 달성한다."></textarea></div>
+  </div>
+</div>
+
+<!-- 5. 강화제 정보 -->
+<div class="card">
+  <div class="bip-section">
+    <div class="bip-section-title">5. 강화제 정보</div>
+    <div class="fg"><label>선호 강화제</label><textarea id="fn-reinf" placeholder="사회적: 칭찬, 하이파이브&#10;활동: 태블릿, 그리기&#10;실물: 스티커, 간식"></textarea></div>
+    <div class="fg"><label>강화 스케줄</label><input type="text" id="fn-schedule" placeholder="예: 연속강화(CRF) → 점진적으로 FR3으로 감소"></div>
+  </div>
+</div>
+<div class="card">
     <div class="card-t">① 행동 기능 직접 선택</div>
     <div class="card-d">FBA(직접관찰, 면담, MAS/FAST 등)를 통해 파악한 기능을 선택하세요. 복수 선택 가능합니다.</div>
-    <div class="row">
-      <div class="fg"><label>학생</label><input type="text" id="fn-stu" placeholder="학생 이름"></div>
-      <div class="fg"><label>목표 행동</label><input type="text" id="fn-beh" placeholder="조작적 정의"></div>
-    </div>
+    <div class="fg"><label>목표 행동</label><input type="text" id="fn-beh" placeholder="조작적 정의 (간략)"></div>
     <div class="fn-grid" id="fn-grid">
       <div class="fn-card" data-fn="관심끌기" onclick="toggleFn(this)">
         <div class="fn-icon">👀</div>

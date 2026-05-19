@@ -278,7 +278,7 @@ canvas{width:100%!important;max-height:400px}
 <!-- 5. 강화제 정보 -->
 <div class="card">
   <div class="bip-section">
-    <div class="bip-section-title">5. 강화제 정보</div>
+    <div class="bip-section-title">4. 강화제 정보</div>
     <div class="fg"><label>선호 강화제</label><textarea id="fn-reinf" placeholder="사회적: 칭찬, 하이파이브&#10;활동: 태블릿, 그리기&#10;실물: 스티커, 간식"></textarea></div>
     <div class="fg"><label>강화 스케줄</label><input type="text" id="fn-schedule" placeholder="예: 연속강화(CRF) → 점진적으로 FR3으로 감소"></div>
   </div>
@@ -310,7 +310,7 @@ canvas{width:100%!important;max-height:400px}
       </div>
     </div>
     <div style="margin-top:12px">
-      <button class="btn btn-pri btn-block" onclick="saveFnSelection()">기능 선택 저장 → ③ EBP 추천으로</button>
+      <button class="btn btn-pri btn-block" onclick="saveFnSelection()">기본 정보 및 기능 저장 → ② EBP 추천으로</button>
     </div>
   </div>
   <div id="fn-saved-list"></div>
@@ -460,7 +460,7 @@ canvas{width:100%!important;max-height:400px}
 
   <div class="card">
     <div class="bip-section">
-      <div class="bip-section-title">5. 강화제 정보</div>
+      <div class="bip-section-title">4. 강화제 정보</div>
       <div class="fg"><label>선호 강화제</label><textarea id="bip-reinf" placeholder="사회적: 칭찬, 하이파이브&#10;활동: 태블릿, 그리기&#10;실물: 스티커, 간식"></textarea></div>
       <div class="fg"><label>강화 스케줄</label><input type="text" id="bip-schedule" placeholder="예: 연속강화(CRF) → 점진적으로 FR3으로 감소"></div>
     </div>
@@ -548,11 +548,11 @@ canvas{width:100%!important;max-height:400px}
       <label><input type="checkbox" value="target" checked> 2. 목표 행동 조작적 정의</label><br>
       <label><input type="checkbox" value="fba" checked> 3. FBA 결과 요약</label><br>
       <label><input type="checkbox" value="cbm" checked> 3.5 경쟁행동모델</label><br>
-      <label><input type="checkbox" value="reinf" checked> 5. 강화제 정보</label><br>
-      <label><input type="checkbox" value="goal" checked> 6. 목표 설정</label><br>
-      <label><input type="checkbox" value="intervention" checked> 7. 중재 방법</label><br>
-      <label><input type="checkbox" value="crisis" checked> 8. 위기 관리 계획</label><br>
-      <label><input type="checkbox" value="data" checked> 9. 데이터 수집 및 검토 계획</label>
+      <label><input type="checkbox" value="reinf" checked> 4. 강화제 정보</label><br>
+      <label><input type="checkbox" value="goal" checked> 5. 목표 설정</label><br>
+      <label><input type="checkbox" value="intervention" checked> 6. 중재 방법</label><br>
+      <label><input type="checkbox" value="crisis" checked> 7. 위기 관리 계획</label><br>
+      <label><input type="checkbox" value="data" checked> 8. 데이터 수집 및 검토 계획</label>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
       <button class="btn btn-acc btn-sm" onclick="exportBIPPdf()">내보내기</button>
@@ -1302,14 +1302,55 @@ function exportBIPPdf() {
   sections.cbm = `
   <div class="section">
     <div class="section-title">3.5 경쟁행동모델 (CBM)</div>
-    <div class="cbm-box">
-      <div class="row"><span class="label">선행사건:</span> ${getValue('cbm-antecedent')}</div>
-      <div class="row"><span class="label">문제행동:</span> ${getValue('cbm-problem')}</div>
-      <div class="row"><span class="label">유지결과:</span> ${getValue('cbm-maintaining')}</div>
-      <div class="row"><span class="label">바람직한 행동:</span> ${getValue('cbm-desired')}</div>
-      <div class="row"><span class="label">바람직한 결과:</span> ${getValue('cbm-desired-result')}</div>
-      <div class="row"><span class="label">대안행동:</span> ${getValue('cbm-alternative')}</div>
-      <div class="row"><span class="label">대안적 결과:</span> ${getValue('cbm-alt-result')}</div>
+    <div style="border:1px solid #ccc;border-radius:8px;padding:16px;margin:8px 0;background:#faf8fc">
+      
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px">
+        <div style="width:28%;min-width:80px"></div>
+        <div style="background:#d5f5e3;border:2px solid #27ae60;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
+          <div style="font-size:9px;color:#27ae60;font-weight:700">바람직한 행동</div>
+          <div style="font-size:11px;margin-top:4px">${getValue('cbm-desired') || '-'}</div>
+        </div>
+        <div style="color:#27ae60;font-size:14px">→</div>
+        <div style="background:#d5f5e3;border:2px solid #27ae60;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
+          <div style="font-size:9px;color:#27ae60;font-weight:700">바람직한 결과</div>
+          <div style="font-size:11px;margin-top:4px">${getValue('cbm-desired-result') || '-'}</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:#8e44ad;font-size:11px;margin:2px 0">↑ 경쟁 ↑</div>
+
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0">
+        <div style="background:#fdebd0;border:2px solid #e67e22;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
+          <div style="font-size:9px;color:#e67e22;font-weight:700">선행사건</div>
+          <div style="font-size:11px;margin-top:4px">${getValue('cbm-antecedent') || '-'}</div>
+        </div>
+        <div style="color:#e67e22;font-size:14px">→</div>
+        <div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
+          <div style="font-size:9px;color:#c0392b;font-weight:700">문제행동</div>
+          <div style="font-size:11px;margin-top:4px">${getValue('cbm-problem') || '-'}</div>
+        </div>
+        <div style="color:#c0392b;font-size:14px">→</div>
+        <div style="background:#fdecea;border:2px solid #c0392b;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
+          <div style="font-size:9px;color:#c0392b;font-weight:700">유지결과 (기능)</div>
+          <div style="font-size:11px;margin-top:4px">${getValue('cbm-maintaining') || '-'}</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:#8e44ad;font-size:11px;margin:2px 0">↓ 경쟁 ↓</div>
+
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px">
+        <div style="width:28%;min-width:80px"></div>
+        <div style="background:#d6eaf8;border:2px solid #2e86c1;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
+          <div style="font-size:9px;color:#2e86c1;font-weight:700">대안행동</div>
+          <div style="font-size:11px;margin-top:4px">${getValue('cbm-alternative') || '-'}</div>
+        </div>
+        <div style="color:#2e86c1;font-size:14px">→</div>
+        <div style="background:#d6eaf8;border:2px solid #2e86c1;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
+          <div style="font-size:9px;color:#2e86c1;font-weight:700">대안적 결과</div>
+          <div style="font-size:11px;margin-top:4px">${getValue('cbm-alt-result') || '-'}</div>
+        </div>
+      </div>
+
     </div>
     <div class="strat-box strat-ant"><strong>선행사건 중재:</strong> ${getValue('cbm-strat-ant')}</div>
     <div class="strat-box strat-teach"><strong>교수 전략:</strong> ${getValue('cbm-strat-teach')}</div>
@@ -1318,7 +1359,7 @@ function exportBIPPdf() {
 
   sections.reinf = `
   <div class="section">
-    <div class="section-title">5. 강화제 정보</div>
+    <div class="section-title">4. 강화제 정보</div>
     <div class="content">${getValue('bip-reinf')}</div>
     <div class="row"><span class="label">강화 스케줄:</span> ${getValue('bip-schedule')}</div>
   </div>`;

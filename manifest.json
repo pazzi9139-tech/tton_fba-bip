@@ -1,7 +1,7 @@
 {
-  "name": "FBA-BIP 통합 도구",
-  "short_name": "FBA-BIP",
-  "description": "기능적 행동평가(FBA)부터 행동중재계획(BIP), 사회적 상황이야기 제작까지 — 특수교육 현장 통합 도구",
+  "name": "행동중재계획(BIP) 작성 도구",
+"short_name": "BIP 도구",
+"description": "행동중재계획(BIP) 작성 · 기능선택 · EBP 추천 · 사회적 상황이야기까지 — 특수교사를 위한 통합 도구",
   "lang": "ko",
   "dir": "ltr",
   "start_url": "./index.html",

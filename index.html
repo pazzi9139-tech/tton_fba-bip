@@ -223,113 +223,15 @@ canvas{width:100%!important;max-height:400px}
 
 <div class="header">
   <h1>FBA → BIP 데이터 도구</h1>
-  <p>행동기록 → 기능선택 → EBP추천 → BIP작성 → 효과그래프</p>
+  <p>기능선택 → EBP추천 → BIP작성</p>
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
   <p style="margin-top:2px;font-size:10px;opacity:.7">v1.1.0 · 2026.05.19</p>
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="showTab(0)"><div class="num">1</div><br>행동기록</div>
-  <div class="tab" onclick="showTab(1)"><div class="num">2</div><br>기능선택</div>
-  <div class="tab" onclick="showTab(2)"><div class="num">3</div><br>EBP추천</div>
-  <div class="tab" onclick="showTab(3)"><div class="num">4</div><br>BIP작성</div>
-  <div class="tab" onclick="showTab(4)"><div class="num">5</div><br>효과그래프</div>
-</div>
-
-<!-- ══════ TAB 1: 행동 기록 ══════ -->
-<div class="section active" id="sec-0">
-  <div class="sub-tabs">
-    <div class="sub-tab active" onclick="showSub(0,0)">빈도 기록</div>
-    <div class="sub-tab" onclick="showSub(0,1)">지속시간</div>
-    <div class="sub-tab" onclick="showSub(0,2)">ABC 기록</div>
-    <div class="sub-tab" onclick="showSub(0,3)">기록 보기</div>
-  </div>
-
-  <!-- 빈도 기록 -->
-  <div class="sub-section active" id="sub-0-0">
-    <div class="card">
-      <div class="card-t">빈도 기록</div>
-      <div class="row">
-        <div class="fg"><label>학생</label><input type="text" id="freq-stu" placeholder="학생 이름"></div>
-        <div class="fg"><label>행동</label><input type="text" id="freq-beh" placeholder="목표 행동"></div>
-      </div>
-      <div class="fg"><label>관찰 시간(분)</label><input type="number" id="freq-min" value="30" min="1"></div>
-      <div style="text-align:center;padding:20px 0">
-        <div style="font-size:48px;font-weight:700;color:var(--pri)" id="freq-count">0</div>
-        <div style="font-size:13px;color:var(--sub)" id="freq-rate">0.00 회/분</div>
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-          <button class="btn btn-pri" style="font-size:24px;width:60px;height:60px;border-radius:50%" onclick="freqChange(1)">+</button>
-          <button class="btn btn-out" style="font-size:24px;width:60px;height:60px;border-radius:50%" onclick="freqChange(-1)">−</button>
-        </div>
-      </div>
-      <button class="btn btn-acc btn-block" onclick="saveFreq()">빈도 기록 저장</button>
-    </div>
-  </div>
-
-  <!-- 지속시간 -->
-  <div class="sub-section" id="sub-0-1">
-    <div class="card">
-      <div class="card-t">지속시간 기록</div>
-      <div class="row">
-        <div class="fg"><label>학생</label><input type="text" id="dur-stu" placeholder="학생 이름"></div>
-        <div class="fg"><label>행동</label><input type="text" id="dur-beh" placeholder="목표 행동"></div>
-      </div>
-      <div style="text-align:center;padding:20px 0">
-        <div style="font-size:40px;font-weight:700;color:var(--pri);font-variant-numeric:tabular-nums" id="dur-display">00:00</div>
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-          <button class="btn btn-pri" id="dur-toggle" onclick="toggleTimer()">▶ 시작</button>
-          <button class="btn btn-out" onclick="resetTimer()">초기화</button>
-        </div>
-        <div id="dur-laps" style="margin-top:12px;font-size:12px;color:var(--sub)"></div>
-      </div>
-      <button class="btn btn-acc btn-block" onclick="saveDur()">지속시간 기록 저장</button>
-    </div>
-  </div>
-
-  <!-- ABC 기록 -->
-  <div class="sub-section" id="sub-0-2">
-    <div class="card">
-      <div class="card-t">ABC 기록</div>
-      <div class="row">
-        <div class="fg"><label>학생</label><input type="text" id="abc-stu" placeholder="학생 이름"></div>
-        <div class="fg"><label>날짜/시간</label><input type="datetime-local" id="abc-dt"></div>
-      </div>
-      <div class="fg"><label>장소/상황</label><input type="text" id="abc-ctx" placeholder="예: 국어시간, 쉬는시간"></div>
-      <div class="fg"><label>A (선행사건)</label><textarea id="abc-a" placeholder="행동 직전 상황"></textarea></div>
-      <div class="fg"><label>B (행동)</label><textarea id="abc-b" placeholder="관찰된 행동"></textarea></div>
-      <div class="fg"><label>C (후속결과)</label><textarea id="abc-c" placeholder="행동 직후 결과"></textarea></div>
-      <div class="row">
-        <div class="fg"><label>강도 (1~5)</label>
-          <select id="abc-int"><option value="1">1-약함</option><option value="2">2</option><option value="3" selected>3-보통</option><option value="4">4</option><option value="5">5-심함</option></select>
-        </div>
-        <div class="fg"><label>추정 기능</label>
-          <select id="abc-fn"><option value="">선택 안함</option><option value="관심끌기">관심끌기</option><option value="회피/탈출">회피/탈출</option><option value="감각자극">감각자극</option><option value="실물획득">실물획득</option></select>
-        </div>
-      </div>
-      <button class="btn btn-acc btn-block" onclick="saveABC()">ABC 기록 저장</button>
-    </div>
-  </div>
-
-  <!-- 기록 보기 -->
-  <div class="sub-section" id="sub-0-3">
-    <div class="card">
-      <div class="card-t">기록 보기</div>
-      <div class="row" style="margin-bottom:12px">
-        <div class="fg"><label>학생 필터</label>
-          <select id="hist-filter" onchange="renderHistory()"><option value="">전체</option></select>
-        </div>
-        <div class="fg"><label>유형 필터</label>
-          <select id="hist-type" onchange="renderHistory()"><option value="">전체</option><option value="freq">빈도</option><option value="dur">지속시간</option><option value="abc">ABC</option></select>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn btn-out btn-sm" onclick="exportCSV()">CSV 내보내기</button>
-        <button class="btn btn-out btn-sm" onclick="exportJSON()">JSON 백업</button>
-        <button class="btn btn-out btn-sm" onclick="importJSON()">JSON 복원</button>
-      </div>
-      <div id="hist-list"></div>
-    </div>
-  </div>
+  <div class="tab active" onclick="showTab(0)"><div class="num">1</div><br>기능선택</div>
+  <div class="tab" onclick="showTab(1)"><div class="num">2</div><br>EBP추천</div>
+  <div class="tab" onclick="showTab(2)"><div class="num">3</div><br>BIP작성</div>
 </div>
 
 <!-- ══════ TAB 2: 기능 선택 ══════ -->
@@ -613,61 +515,6 @@ canvas{width:100%!important;max-height:400px}
   <div id="bip-saved-list" style="margin-top:12px"></div>
 </div>
 
-<!-- ══════ TAB 5: 효과 그래프 ══════ -->
-<div class="section" id="sec-4">
-  <div class="card">
-    <div class="card-t">⑤ 중재 효과 그래프</div>
-    <div class="card-d">기초선과 중재 구간 데이터를 입력하면 꺾은선 그래프로 시각화됩니다.</div>
-  </div>
-
-  <div class="card">
-    <div class="sub-tabs">
-      <div class="sub-tab active" onclick="showGraphMode('manual')">직접 입력</div>
-      <div class="sub-tab" onclick="showGraphMode('auto')">행동기록 연동</div>
-    </div>
-
-    <!-- 직접 입력 모드 -->
-    <div id="graph-manual">
-      <div class="row">
-        <div class="fg"><label>학생</label><input type="text" id="gr-stu" placeholder="학생 이름"></div>
-        <div class="fg"><label>행동</label><input type="text" id="gr-beh" placeholder="목표 행동"></div>
-      </div>
-      <div class="fg"><label>측정 단위</label>
-        <select id="gr-unit"><option value="회">회(빈도)</option><option value="분">분(지속시간)</option><option value="%">%(비율)</option></select>
-      </div>
-      <div class="fg"><label>설계 유형</label>
-        <select id="gr-design" onchange="updatePhaseInputs()">
-          <option value="AB">A-B 설계</option>
-          <option value="ABAB">A-B-A-B 반전 설계</option>
-          <option value="MB">다중기초선 (행동별)</option>
-        </select>
-      </div>
-      <div id="phase-inputs"></div>
-      <button class="btn btn-pri btn-block" style="margin-top:12px" onclick="drawGraph()">📊 그래프 그리기</button>
-    </div>
-
-    <!-- 자동 연동 모드 -->
-    <div id="graph-auto" style="display:none">
-      <div class="fg"><label>학생 선택</label>
-        <select id="gr-auto-stu" onchange="loadAutoGraphData()"><option value="">선택</option></select>
-      </div>
-      <div class="fg"><label>중재 시작일</label><input type="date" id="gr-auto-start"></div>
-      <button class="btn btn-pri btn-block" onclick="drawAutoGraph()">📊 자동 그래프 그리기</button>
-    </div>
-  </div>
-
-  <div class="graph-container" id="graph-box" style="display:none">
-    <canvas id="graph-canvas"></canvas>
-    <div class="stat-grid" id="graph-stats"></div>
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button class="btn btn-out btn-sm" onclick="exportGraphCSV()">CSV 내보내기</button>
-      <button class="btn btn-out btn-sm" onclick="saveGraphImage()">이미지 저장</button>
-    </div>
-  </div>
-
-  <div id="saved-graphs" style="margin-top:12px"></div>
-</div>
-
 <script>
 // ═══════════════════════════════════════
 // STORAGE
@@ -689,11 +536,9 @@ function showTab(i) {
   document.querySelectorAll('.tab').forEach((t, idx) => {
     t.classList.toggle('active', idx === i);
   });
-  if (i === 0) renderHistory();
-  if (i === 1) renderFnList();
-  if (i === 2) loadFnOptions();
-  if (i === 3) loadBIPList();
-  if (i === 4) { loadAutoStudents(); loadSavedGraphs(); }
+  if (i === 0) renderFnList();
+  if (i === 1) loadFnOptions();
+  if (i === 2) loadBIPList();
 }
 
 function showSub(tab, sub) {
@@ -893,8 +738,8 @@ function saveFnSelection() {
   document.getElementById('fn-stu').value = '';
   document.getElementById('fn-beh').value = '';
   renderFnList();
-  alert('저장! ③ EBP 추천 탭으로 이동하세요.');
-  showTab(2);
+  alert('저장! ② EBP 추천 탭으로 이동하세요.');
+  showTab(1);
 }
 
 function renderFnList() {
@@ -1144,7 +989,7 @@ function updateEBPSummary() {
 }
 
 function sendToBIP() {
-  showTab(3);
+  showTab(2);
   // Auto-fill BIP intervention sections
   const grouped = {};
   selectedEBPs.forEach(e => {
@@ -1836,15 +1681,13 @@ function updateSSFnTags() {
 const _origShowTab = showTab;
 showTab = function(i) {
   _origShowTab(i);
-  if (i === 3) updateSSFnTags();
+  if (i === 2) updateSSFnTags();
 };
 
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-document.getElementById('abc-dt').value = new Date().toISOString().slice(0, 16);
-updatePhaseInputs();
-renderHistory();
+
 
 // ═══════════════════════════════════════
 // PWA: Service Worker 등록
@@ -1858,7 +1701,7 @@ if ('serviceWorker' in navigator) {
 // 안드로이드 TWA: 뒤로가기 처리 (sec-3 BIP 탭에서 뒤로가기 누르면 안내)
 // 기본 동작은 브라우저 히스토리 따라감 — social-story.html에서 돌아오면 BIP 탭(3)으로 자동 진입
 if (location.hash === '#bip') {
-  showTab(3);
+  showTab(2);
 }
 </script>
     <!-- ══ 저작권 표기 ══ -->

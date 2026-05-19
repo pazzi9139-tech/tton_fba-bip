@@ -772,9 +772,9 @@ function downloadFile(content, filename, type) {
 function toggleFn(el) { el.classList.toggle('selected'); }
 
 function saveFnSelection() {
-  const stu = document.getElementById('fn-stu').value.trim();
+  const stu = document.getElementById('fn-stu2').value.trim();
   const beh = document.getElementById('fn-beh').value.trim();
-  if (!stu || !beh) return alert('학생과 행동을 입력하세요.');
+  if (!stu || !beh) return alert('학생 이름과 목표 행동을 입력하세요.');
   const selected = [...document.querySelectorAll('.fn-card.selected')].map(c => c.dataset.fn);
   if (!selected.length) return alert('기능을 하나 이상 선택하세요.');
 
@@ -782,11 +782,30 @@ function saveFnSelection() {
   fns.push({ student: stu, behavior: beh, functions: selected, date: new Date().toISOString(), id: Date.now() });
   LS.set('functions', fns);
 
+  // BIP 탭으로 자동 복사
+  const copyMap = {
+    'fn-stu2': 'bip-stu',
+    'fn-date': 'bip-date',
+    'fn-class': 'bip-class',
+    'fn-author': 'bip-author',
+    'fn-team': 'bip-team',
+    'fn-target': 'bip-target',
+    'fn-baseline': 'bip-baseline',
+    'fn-antecedent': 'bip-antecedent',
+    'fn-consequence': 'bip-consequence',
+    'fn-hypothesis': 'bip-hypothesis',
+    'fn-reinf': 'bip-reinf',
+    'fn-schedule': 'bip-schedule'
+  };
+  Object.entries(copyMap).forEach(([from, to]) => {
+    const src = document.getElementById(from);
+    const dst = document.getElementById(to);
+    if (src && dst) dst.value = src.value;
+  });
+
   document.querySelectorAll('.fn-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('fn-stu').value = '';
-  document.getElementById('fn-beh').value = '';
   renderFnList();
-  alert('저장! ② EBP 추천 탭으로 이동하세요.');
+  alert('저장 완료! BIP에 자동 입력되었습니다. ② EBP 추천 탭으로 이동합니다.');
   showTab(1);
 }
 

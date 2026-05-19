@@ -1,0 +1,50 @@
+저작권 © 2026 특수교사 이노아 · 연구회 뜨온
+Copyright © 2026 Lee Noah (Special Education Teachers Research Group "Tton")
+All rights reserved.
+
+═══════════════════════════════════════════════════════════════
+
+[저작권의 범위]
+
+본 소프트웨어 "FBA-BIP 통합 도구"는 공공의 학문적 지식
+(NCAEP 27 EBP, O'Neill 경쟁행동모델, Carol Gray Social Stories™ 등)에
+기반하지만, 저자가 다음을 독창적으로 창작·통합하였습니다:
+
+1. 각 EBP에 대한 한국어 설명문 및 현장 적용 안내
+2. FBA→BIP→EBP→상황이야기로 이어지는 통합 워크플로우 설계
+3. 12개 사회적 상황이야기 한국어 본문 및 템플릿
+4. 기능 가설과 추천 템플릿 자동 매핑 로직
+5. BIP 양식의 한국어 인터페이스 디자인, 입력 폼 구성, 
+   CBM 다이어그램의 시각적 구현 및 인터랙티브 편집 방식
+   (CBM 모델 자체는 O'Neill et al. 1997의 학문적 자산)
+6. 사용자 인터페이스, 디자인, 색상, 코드 일체
+
+위 항목들에 대한 저작권은 저자에게 있으며, 다음 행위는
+저자의 명시적 서면 동의 없이 금지됩니다:
+
+(1) 본 소프트웨어의 상업적 재배포·재출시 (Play Store, App Store 등)
+(2) 본 도구의 한국어 텍스트·디자인을 다른 앱·웹사이트에 무단 복제
+(3) 본 도구를 기반으로 한 파생물의 상업적 이용
+(4) 저자 표기 제거 또는 변조
+
+다음은 허용됩니다:
+- 특수교육 현장에서의 자유로운 사용 (학생·학교 비용 청구 없음)
+- 비상업적 학습·연구 목적의 코드 열람
+- 출처를 명시한 학술 인용
+
+═══════════════════════════════════════════════════════════════
+
+[참고: 본 도구가 기반한 공공 자료의 출처]
+
+- NCAEP (2020). Evidence-Based Practices for Children, Youth, and 
+  Young Adults with Autism. National Clearinghouse on Autism Evidence 
+  and Practice Review Team.
+- O'Neill, R. E., et al. (1997). Functional Assessment and Program 
+  Development for Problem Behavior.
+- Gray, C. (2023). Social Stories™ 10.4. The Gray Center.
+- 위 자료의 개념·이론 자체는 본 도구의 저작권 주장에서 제외됩니다.
+
+═══════════════════════════════════════════════════════════════
+
+문의 / Contact: rt615@naver.com
+카카오톡 오픈채팅: "행동중재 도구 피드백"

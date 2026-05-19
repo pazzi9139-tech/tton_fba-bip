@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -271,7 +271,6 @@ textarea{resize:vertical;min-height:80px}
       <span style="font-weight:600;font-size:13px">미리보기</span>
       <div style="display:flex;gap:6px">
         <button class="btn btn-out btn-sm" onclick="window.print()">📑 PDF 내보내기</button>
-        <button class="btn btn-out btn-sm" onclick="exportStoryText()">📊 PPT 내보내기</button>
         <button class="btn btn-pri btn-sm" onclick="saveStory()">💾 저장</button>
       </div>
     </div>
@@ -1105,118 +1104,73 @@ function renderPreview() {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PDF 내보내기 (인쇄 대화상자 → PDF로 저장)
+// PDF 내보내기 (자동 다운로드)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function exportPDF() {
-  window.print();
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// PPT 내보내기 (각 문장 한 슬라이드씩)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function exportPPT() {
-  if (typeof PptxGenJS === 'undefined') {
-    alert('PPT 라이브러리를 불러오는 중입니다.\n잠시 후 다시 시도해주세요.');
-    return;
-  }
-
   const title = document.getElementById('story-title').value.trim() || '사회적 이야기';
-  const filledSentences = sentences.filter(s => s.text.trim());
+  const previewBox = document.getElementById('preview-box');
 
-  if (!filledSentences.length) {
-    alert('문장을 먼저 작성해주세요.');
+  if (!previewBox || !previewBox.innerHTML.trim()) {
+    alert('미리보기 내용이 비어있어요.\n먼저 문장을 작성해주세요.');
     return;
   }
 
-  const pptx = new PptxGenJS();
-  pptx.layout = 'LAYOUT_16x9';
-  pptx.title = title;
-  pptx.author = '특수교사 이노아 · 연구회 뜨온';
+  if (typeof html2pdf === 'undefined') {
+    alert('PDF 라이브러리를 불러오는 중입니다.\n잠시 후 다시 시도해주세요.');
+    return;
+  }
 
-  // ─── 표지 슬라이드 ───
-  const cover = pptx.addSlide();
-  cover.background = { color: 'EAF0E3' };
-  cover.addText(title, {
-    x: 0.5, y: 2.2, w: 9, h: 1.5,
-    fontSize: 44, fontFace: 'Malgun Gothic',
-    bold: true, color: '476840', align: 'center'
-  });
-  cover.addText('사회적 이야기', {
-    x: 0.5, y: 3.9, w: 9, h: 0.5,
-    fontSize: 20, fontFace: 'Malgun Gothic',
-    color: '888888', align: 'center'
-  });
-  cover.addText('Carol Gray Social Stories™ 10.4', {
-    x: 0.5, y: 4.6, w: 9, h: 0.4,
-    fontSize: 13, fontFace: 'Malgun Gothic',
-    color: 'AAAAAA', align: 'center'
-  });
+  // 미리보기 박스 복제 (원본 그대로 두고)
+  const clone = previewBox.cloneNode(true);
+  clone.style.padding = '40px';
+  clone.style.border = 'none';
+  clone.style.boxShadow = 'none';
+  clone.style.maxWidth = '100%';
+  clone.style.width = '180mm';
+  clone.style.background = '#fff';
+  clone.style.fontFamily = "'Nanum Myeongjo', serif";
 
-  // ─── 각 문장 슬라이드 ───
-  filledSentences.forEach((s, i) => {
-    const slide = pptx.addSlide();
-    slide.background = { color: 'FFFFFF' };
+  // 임시로 화면 밖에 부착 (렌더링용)
+  const tempContainer = document.createElement('div');
+  tempContainer.style.position = 'fixed';
+  tempContainer.style.left = '-9999px';
+  tempContainer.style.top = '0';
+  tempContainer.appendChild(clone);
+  document.body.appendChild(tempContainer);
 
-    slide.addText(`${i + 1} / ${filledSentences.length}`, {
-      x: 8.5, y: 0.3, w: 1, h: 0.3,
-      fontSize: 12, fontFace: 'Malgun Gothic',
-      color: 'BBBBBB', align: 'right'
-    });
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `사회적이야기_${title}_${new Date().toISOString().split('T')[0]}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true, 
+      backgroundColor: '#ffffff',
+      logging: false
+    },
+    jsPDF: { 
+      unit: 'mm', 
+      format: 'a4', 
+      orientation: 'portrait',
+      compress: true
+    },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+  };
 
-    if (s.imgData) {
-      try {
-        slide.addImage({
-          data: s.imgData,
-          x: 2.5, y: 0.7, w: 5, h: 2.8,
-          sizing: { type: 'contain', w: 5, h: 2.8 }
-        });
-        slide.addText(s.text, {
-          x: 0.7, y: 3.8, w: 8.6, h: 1.8,
-          fontSize: 32, fontFace: 'Malgun Gothic',
-          color: '2A2A2A', align: 'center', valign: 'middle'
-        });
-      } catch (e) {
-        slide.addText(s.text, {
-          x: 0.7, y: 2, w: 8.6, h: 3,
-          fontSize: 40, fontFace: 'Malgun Gothic',
-          color: '2A2A2A', align: 'center', valign: 'middle'
-        });
-      }
-    } else {
-      slide.addText(s.text, {
-        x: 0.7, y: 2, w: 8.6, h: 3,
-        fontSize: 40, fontFace: 'Malgun Gothic',
-        color: '2A2A2A', align: 'center', valign: 'middle'
-      });
-    }
-  });
+  // 작업 표시
+  const btn = event?.target;
+  const orig = btn ? btn.textContent : null;
+  if (btn) btn.textContent = '⏳ PDF 생성중...';
 
-  // ─── 마지막 슬라이드 ───
-  const last = pptx.addSlide();
-  last.background = { color: 'EAF0E3' };
-  last.addText('끝', {
-    x: 0.5, y: 1.8, w: 9, h: 1.2,
-    fontSize: 60, fontFace: 'Malgun Gothic',
-    bold: true, color: '476840', align: 'center'
+  html2pdf().set(opt).from(clone).save().then(() => {
+    document.body.removeChild(tempContainer);
+    if (btn && orig) btn.textContent = orig;
+  }).catch((err) => {
+    console.error(err);
+    alert('PDF 생성에 실패했어요.\n다시 시도해주세요.');
+    document.body.removeChild(tempContainer);
+    if (btn && orig) btn.textContent = orig;
   });
-  last.addText('만든이: 특수교사 이노아 · 연구회 뜨온', {
-    x: 0.5, y: 3.6, w: 9, h: 0.5,
-    fontSize: 16, fontFace: 'Malgun Gothic',
-    color: '666666', align: 'center'
-  });
-  last.addText('Carol Gray Social Stories™ 10.4 기준 작성', {
-    x: 0.5, y: 4.2, w: 9, h: 0.4,
-    fontSize: 13, fontFace: 'Malgun Gothic',
-    color: '888888', align: 'center'
-  });
-  last.addText(`작성일: ${new Date().toLocaleDateString('ko-KR')}`, {
-    x: 0.5, y: 4.7, w: 9, h: 0.4,
-    fontSize: 12, fontFace: 'Malgun Gothic',
-    color: 'AAAAAA', align: 'center'
-  });
-
-  const fileName = `사회적이야기_${title}_${new Date().toISOString().split('T')[0]}.pptx`;
-  pptx.writeFile({ fileName: fileName });
 }
 
 // ═══════════════════════════════════════

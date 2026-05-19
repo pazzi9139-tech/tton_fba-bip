@@ -237,7 +237,7 @@ canvas{width:100%!important;max-height:400px}
 <!-- ══════ TAB 2: 기능 선택 ══════ -->
 <div class="section" id="sec-1">
   <div class="card">
-    <div class="card-t">② 행동 기능 직접 선택</div>
+    <div class="card-t">① 행동 기능 직접 선택</div>
     <div class="card-d">FBA(직접관찰, 면담, MAS/FAST 등)를 통해 파악한 기능을 선택하세요. 복수 선택 가능합니다.</div>
     <div class="row">
       <div class="fg"><label>학생</label><input type="text" id="fn-stu" placeholder="학생 이름"></div>
@@ -275,7 +275,7 @@ canvas{width:100%!important;max-height:400px}
 <!-- ══════ TAB 3: EBP 중재 추천 ══════ -->
 <div class="section" id="sec-2">
   <div class="card">
-    <div class="card-t">③ EBP 중재 추천</div>
+    <div class="card-t">② EBP 중재 추천</div>
     <div class="card-d">선택한 기능에 따른 증거기반중재 목록입니다. 적용할 중재를 클릭하세요.</div>
     <div class="fg"><label>기능 선택 불러오기</label>
       <select id="ebp-load" onchange="loadEBP()"><option value="">저장된 기능 선택</option></select>
@@ -285,14 +285,14 @@ canvas{width:100%!important;max-height:400px}
   <div id="ebp-selected-summary" style="display:none" class="card">
     <div class="card-t">선택된 중재 요약</div>
     <div id="ebp-selected-content"></div>
-    <button class="btn btn-pri btn-block" style="margin-top:12px" onclick="sendToBIP()">→ ④ BIP 작성으로 보내기</button>
+    <button class="btn btn-pri btn-block" style="margin-top:12px" onclick="sendToBIP()">→ ③ BIP 작성으로 보내기</button>
   </div>
 </div>
 
 <!-- ══════ TAB 4: BIP 작성 ══════ -->
 <div class="section" id="sec-3">
   <div class="card">
-    <div class="card-t">④ 행동중재계획(BIP) 작성</div>
+    <div class="card-t">③ 행동중재계획(BIP) 작성</div>
     <div class="card-d">FBA 결과와 선택한 EBP를 기반으로 BIP를 작성합니다.</div>
   </div>
 

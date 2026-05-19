@@ -496,9 +496,30 @@ canvas{width:100%!important;max-height:400px}
 
   <div style="display:flex;gap:8px;flex-wrap:wrap">
     <button class="btn btn-pri" onclick="saveBIP()">💾 BIP 저장</button>
-    <button class="btn btn-acc" onclick="exportBIPPdf()">📄 PDF 내보내기</button>
+    <button class="btn btn-acc" onclick="document.getElementById('pdf-section-picker').style.display='block'">📄 PDF 내보내기</button>
     <button class="btn btn-out" onclick="loadBIPList()">📂 저장된 BIP 불러오기</button>
   </div>
+  <!-- PDF 섹션 선택 -->
+<div id="pdf-section-picker" style="display:none;margin-top:12px">
+  <div class="card" style="border:2px solid var(--acc)">
+    <div style="font-weight:600;color:var(--acc);margin-bottom:8px">📄 내보낼 섹션 선택</div>
+    <div style="font-size:13px;line-height:2">
+      <label><input type="checkbox" value="basic" checked> 1. 기본 정보</label><br>
+      <label><input type="checkbox" value="target" checked> 2. 목표 행동 조작적 정의</label><br>
+      <label><input type="checkbox" value="fba" checked> 3. FBA 결과 요약</label><br>
+      <label><input type="checkbox" value="cbm" checked> 3.5 경쟁행동모델</label><br>
+      <label><input type="checkbox" value="reinf" checked> 5. 강화제 정보</label><br>
+      <label><input type="checkbox" value="goal" checked> 6. 목표 설정</label><br>
+      <label><input type="checkbox" value="intervention" checked> 7. 중재 방법</label><br>
+      <label><input type="checkbox" value="crisis" checked> 8. 위기 관리 계획</label><br>
+      <label><input type="checkbox" value="data" checked> 9. 데이터 수집 및 검토 계획</label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-acc btn-sm" onclick="exportBIPPdf()">내보내기</button>
+      <button class="btn btn-out btn-sm" onclick="document.getElementById('pdf-section-picker').style.display='none'">취소</button>
+    </div>
+  </div>
+</div>
   <div id="bip-saved-list" style="margin-top:12px"></div>
 </div>
 
@@ -1172,15 +1193,116 @@ function deleteBIP(id) {
 function exportBIPPdf() {
   const stu = document.getElementById('bip-stu').value || '학생';
   const date = document.getElementById('bip-date').value || new Date().toISOString().split('T')[0];
-  
-  // BIP 내용을 깔끔한 인쇄용 HTML로 생성
   const getValue = id => document.getElementById(id)?.value || '';
   const getFnBadges = () => {
     const badges = [];
     document.querySelectorAll('#bip-functions .badge').forEach(b => badges.push(b.textContent.trim()));
     return badges.join(', ') || '(미선택)';
   };
-  
+
+  // 체크된 섹션 수집
+  const checked = new Set();
+  document.querySelectorAll('#pdf-section-picker input[type="checkbox"]:checked').forEach(cb => {
+    checked.add(cb.value);
+  });
+
+  if (checked.size === 0) { alert('최소 1개 섹션을 선택해주세요.'); return; }
+
+  // 각 섹션 HTML 조각
+  const sections = {};
+
+  sections.basic = `
+  <div class="section">
+    <div class="section-title">1. 기본 정보</div>
+    <div class="row"><span class="label">학생:</span> ${getValue('bip-stu')}</div>
+    <div class="row"><span class="label">학급:</span> ${getValue('bip-class')}</div>
+    <div class="row"><span class="label">작성자:</span> ${getValue('bip-author')}</div>
+    <div class="row"><span class="label">작성일:</span> ${getValue('bip-date')}</div>
+    <div class="row"><span class="label">팀 구성원:</span> ${getValue('bip-team')}</div>
+  </div>`;
+
+  sections.target = `
+  <div class="section">
+    <div class="section-title">2. 목표 행동 조작적 정의</div>
+    <div class="content">${getValue('bip-target')}</div>
+    <div class="row" style="margin-top:6px"><span class="label">현재 수준:</span> ${getValue('bip-baseline')}</div>
+  </div>`;
+
+  sections.fba = `
+  <div class="section">
+    <div class="section-title">3. FBA 결과 요약</div>
+    <div class="row"><span class="label">행동의 기능:</span> ${getFnBadges()}</div>
+    <div class="row"><span class="label">선행사건:</span></div>
+    <div class="content">${getValue('bip-antecedent')}</div>
+    <div class="row"><span class="label">후속결과:</span></div>
+    <div class="content">${getValue('bip-consequence')}</div>
+    <div class="row"><span class="label">가설 진술:</span></div>
+    <div class="content">${getValue('bip-hypothesis')}</div>
+  </div>`;
+
+  sections.cbm = `
+  <div class="section">
+    <div class="section-title">3.5 경쟁행동모델 (CBM)</div>
+    <div class="cbm-box">
+      <div class="row"><span class="label">선행사건:</span> ${getValue('cbm-antecedent')}</div>
+      <div class="row"><span class="label">문제행동:</span> ${getValue('cbm-problem')}</div>
+      <div class="row"><span class="label">유지결과:</span> ${getValue('cbm-maintaining')}</div>
+      <div class="row"><span class="label">바람직한 행동:</span> ${getValue('cbm-desired')}</div>
+      <div class="row"><span class="label">바람직한 결과:</span> ${getValue('cbm-desired-result')}</div>
+      <div class="row"><span class="label">대안행동:</span> ${getValue('cbm-alternative')}</div>
+      <div class="row"><span class="label">대안적 결과:</span> ${getValue('cbm-alt-result')}</div>
+    </div>
+    <div class="strat-box strat-ant"><strong>선행사건 중재:</strong> ${getValue('cbm-strat-ant')}</div>
+    <div class="strat-box strat-teach"><strong>교수 전략:</strong> ${getValue('cbm-strat-teach')}</div>
+    <div class="strat-box strat-con"><strong>후속결과 전략:</strong> ${getValue('cbm-strat-con')}</div>
+  </div>`;
+
+  sections.reinf = `
+  <div class="section">
+    <div class="section-title">5. 강화제 정보</div>
+    <div class="content">${getValue('bip-reinf')}</div>
+    <div class="row"><span class="label">강화 스케줄:</span> ${getValue('bip-schedule')}</div>
+  </div>`;
+
+  sections.goal = `
+  <div class="section">
+    <div class="section-title">6. 목표 설정</div>
+    <div class="row"><span class="label">단기 목표:</span></div>
+    <div class="content">${getValue('bip-goal-short')}</div>
+    <div class="row"><span class="label">장기 목표:</span></div>
+    <div class="content">${getValue('bip-goal-long')}</div>
+  </div>`;
+
+  sections.intervention = `
+  <div class="section">
+    <div class="section-title">7. 중재 방법</div>
+    <div class="strat-box strat-ant"><strong>선행사건 중재 (예방):</strong><br>${getValue('bip-int-ant-custom') || '(EBP에서 선택된 중재 참조)'}</div>
+    <div class="strat-box strat-teach"><strong>대체행동 교수:</strong><br>${getValue('bip-int-alt-custom') || '(EBP에서 선택된 중재 참조)'}</div>
+    <div class="strat-box strat-con"><strong>후속결과 중재:</strong><br>${getValue('bip-int-con-custom') || '(EBP에서 선택된 중재 참조)'}</div>
+  </div>`;
+
+  sections.crisis = `
+  <div class="section">
+    <div class="section-title">8. 위기 관리 계획</div>
+    <div class="crisis c1"><strong>🟢 1단계 (예방):</strong> ${getValue('bip-crisis-1')}</div>
+    <div class="crisis c2"><strong>🟡 2단계 (완화):</strong> ${getValue('bip-crisis-2')}</div>
+    <div class="crisis c3"><strong>🟠 3단계 (대처):</strong> ${getValue('bip-crisis-3')}</div>
+    <div class="crisis c4"><strong>🔴 4단계 (회복):</strong> ${getValue('bip-crisis-4')}</div>
+  </div>`;
+
+  sections.data = `
+  <div class="section">
+    <div class="section-title">9. 데이터 수집 및 검토 계획</div>
+    <div class="row"><span class="label">측정 방법:</span> ${getValue('bip-measure')}</div>
+    <div class="row"><span class="label">검토 주기:</span> ${getValue('bip-review')}</div>
+    <div class="row"><span class="label">검토 기준:</span></div>
+    <div class="content">${getValue('bip-criteria')}</div>
+  </div>`;
+
+  // 선택된 섹션만 조합
+  const sectionOrder = ['basic','target','fba','cbm','reinf','goal','intervention','crisis','data'];
+  const bodyContent = sectionOrder.filter(k => checked.has(k)).map(k => sections[k]).join('\n');
+
   const printHtml = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1198,7 +1320,6 @@ function exportBIPPdf() {
   .row .label{font-weight:600;min-width:80px;color:#555}
   .content{white-space:pre-wrap;padding:6px 0}
   .cbm-box{border:1px solid #ccc;border-radius:6px;padding:10px;margin:8px 0;background:#fafafa}
-  .cbm-title{font-weight:600;font-size:11px;margin-bottom:4px}
   .strat-box{padding:8px;margin:4px 0;border-radius:4px}
   .strat-ant{background:#e4f0f6;border-left:3px solid #2e6b8a}
   .strat-teach{background:#e8efe6;border-left:3px solid #4a6741}
@@ -1215,92 +1336,12 @@ function exportBIPPdf() {
 <body>
   <h1>행동중재계획 (BIP)</h1>
   <div class="subtitle">${stu} | ${date}</div>
-  
-  <div class="section">
-    <div class="section-title">1. 기본 정보</div>
-    <div class="row"><span class="label">학생:</span> ${getValue('bip-stu')}</div>
-    <div class="row"><span class="label">학급:</span> ${getValue('bip-class')}</div>
-    <div class="row"><span class="label">작성자:</span> ${getValue('bip-author')}</div>
-    <div class="row"><span class="label">작성일:</span> ${getValue('bip-date')}</div>
-    <div class="row"><span class="label">팀 구성원:</span> ${getValue('bip-team')}</div>
-  </div>
-  
-  <div class="section">
-    <div class="section-title">2. 목표 행동 조작적 정의</div>
-    <div class="content">${getValue('bip-target')}</div>
-    <div class="row" style="margin-top:6px"><span class="label">현재 수준:</span> ${getValue('bip-baseline')}</div>
-  </div>
-  
-  <div class="section">
-    <div class="section-title">3. FBA 결과 요약</div>
-    <div class="row"><span class="label">행동의 기능:</span> ${getFnBadges()}</div>
-    <div class="row"><span class="label">선행사건:</span></div>
-    <div class="content">${getValue('bip-antecedent')}</div>
-    <div class="row"><span class="label">후속결과:</span></div>
-    <div class="content">${getValue('bip-consequence')}</div>
-    <div class="row"><span class="label">가설 진술:</span></div>
-    <div class="content">${getValue('bip-hypothesis')}</div>
-  </div>
-  
-  <div class="section">
-    <div class="section-title">3.5 경쟁행동모델 (CBM)</div>
-    <div class="cbm-box">
-      <div class="row"><span class="label">선행사건:</span> ${getValue('cbm-antecedent')}</div>
-      <div class="row"><span class="label">문제행동:</span> ${getValue('cbm-problem')}</div>
-      <div class="row"><span class="label">유지결과:</span> ${getValue('cbm-maintaining')}</div>
-      <div class="row"><span class="label">바람직한 행동:</span> ${getValue('cbm-desired')}</div>
-      <div class="row"><span class="label">바람직한 결과:</span> ${getValue('cbm-desired-result')}</div>
-      <div class="row"><span class="label">대안행동:</span> ${getValue('cbm-alternative')}</div>
-      <div class="row"><span class="label">대안적 결과:</span> ${getValue('cbm-alt-result')}</div>
-    </div>
-    <div class="strat-box strat-ant"><strong>선행사건 중재:</strong> ${getValue('cbm-strat-ant')}</div>
-    <div class="strat-box strat-teach"><strong>교수 전략:</strong> ${getValue('cbm-strat-teach')}</div>
-    <div class="strat-box strat-con"><strong>후속결과 전략:</strong> ${getValue('cbm-strat-con')}</div>
-  </div>
-  
-  <div class="section">
-    <div class="section-title">5. 강화제 정보</div>
-    <div class="content">${getValue('bip-reinf')}</div>
-    <div class="row"><span class="label">강화 스케줄:</span> ${getValue('bip-schedule')}</div>
-  </div>
-  
-  <div class="section">
-    <div class="section-title">6. 목표 설정</div>
-    <div class="row"><span class="label">단기 목표:</span></div>
-    <div class="content">${getValue('bip-goal-short')}</div>
-    <div class="row"><span class="label">장기 목표:</span></div>
-    <div class="content">${getValue('bip-goal-long')}</div>
-  </div>
-  
-  <div class="section">
-    <div class="section-title">7. 중재 방법</div>
-    <div class="strat-box strat-ant"><strong>선행사건 중재 (예방):</strong><br>${getValue('bip-int-ant-custom') || '(EBP에서 선택된 중재 참조)'}</div>
-    <div class="strat-box strat-teach"><strong>대체행동 교수:</strong><br>${getValue('bip-int-alt-custom') || '(EBP에서 선택된 중재 참조)'}</div>
-    <div class="strat-box strat-con"><strong>후속결과 중재:</strong><br>${getValue('bip-int-con-custom') || '(EBP에서 선택된 중재 참조)'}</div>
-  </div>
-  
-  <div class="section">
-    <div class="section-title">8. 위기 관리 계획</div>
-    <div class="crisis c1"><strong>🟢 1단계 (예방):</strong> ${getValue('bip-crisis-1')}</div>
-    <div class="crisis c2"><strong>🟡 2단계 (완화):</strong> ${getValue('bip-crisis-2')}</div>
-    <div class="crisis c3"><strong>🟠 3단계 (대처):</strong> ${getValue('bip-crisis-3')}</div>
-    <div class="crisis c4"><strong>🔴 4단계 (회복):</strong> ${getValue('bip-crisis-4')}</div>
-  </div>
-  
-  <div class="section">
-    <div class="section-title">9. 데이터 수집 및 검토 계획</div>
-    <div class="row"><span class="label">측정 방법:</span> ${getValue('bip-measure')}</div>
-    <div class="row"><span class="label">검토 주기:</span> ${getValue('bip-review')}</div>
-    <div class="row"><span class="label">검토 기준:</span></div>
-    <div class="content">${getValue('bip-criteria')}</div>
-  </div>
-  
+  ${bodyContent}
   <div class="footer">본 문서는 FBA→BIP 데이터 도구(뜨온)에서 생성되었습니다.</div>
-  
   <script>window.onload=function(){window.print();}<\/script>
 </body>
 </html>`;
-  
+
   const confirmed = confirm(
     '⚠️ 개인정보 보호 안내\n\n'
     + '이 문서에는 학생의 이름, 행동 특성, 장애 관련 정보 등\n'
@@ -1313,6 +1354,8 @@ function exportBIPPdf() {
     + 'PDF로 내보내시겠습니까?'
   );
   if (!confirmed) return;
+
+  document.getElementById('pdf-section-picker').style.display = 'none';
 
   const printWindow = window.open('', '_blank');
   if (printWindow) {

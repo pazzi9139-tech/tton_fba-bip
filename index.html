@@ -228,7 +228,7 @@ canvas{width:100%!important;max-height:400px}
   <h1>행동중재계획(BIP) 작성 도구</h1>
   <p>기능선택 → EBP추천 → BIP작성 → 사회적상황이야기</p>
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
-  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.1.4 · 2026.05.19</p>
+  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.1.5 · 2026.05.19</p>
 </div>
 
 <div class="tabs">
@@ -448,24 +448,7 @@ canvas{width:100%!important;max-height:400px}
         <div style="font-weight:600;color:var(--pri);margin-bottom:8px">대체행동 교수 (교수)</div>
         <div id="bip-int-alt"></div>
         <textarea id="bip-int-alt-custom" placeholder="추가 대체행동 전략 직접 입력" style="margin-top:8px"></textarea>
-        <!-- 상황이야기 연결 -->
-        <div style="margin-top:12px;padding:12px;background:#fff;border:2px dashed var(--pri);border-radius:10px">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span style="font-size:24px">📖</span>
-            <div>
-              <div style="font-weight:600;font-size:13px;color:var(--pri)">사회적 상황이야기 (Social Story™)</div>
-              <div style="font-size:11px;color:var(--sub)">선행전략으로 상황이야기를 제작하여 학생에게 제공</div>
-            </div>
-          </div>
-          <div id="ss-fn-tags" style="margin-bottom:8px"></div>
-          <button class="btn btn-pri btn-block" onclick="openSocialStory()" style="gap:8px">
-            📖 상황이야기 만들기 도구 열기
-          </button>
-          <div style="font-size:11px;color:var(--sub);margin-top:6px;text-align:center">
-            BIP의 기능가설에 맞는 템플릿이 자동 추천됩니다
-          </div>
-        </div>
-      </div>
+      
       <div class="card" style="background:var(--acc-l);border-color:var(--acc)">
         <div style="font-weight:600;color:var(--acc);margin-bottom:8px">후속결과 중재 (강화/소거)</div>
         <div id="bip-int-con"></div>
@@ -779,8 +762,8 @@ function fnKey(fn) {
 const EBP_DB = {
   '관심끌기': {
     '선행사건 중재': [
-      { name: 'NCR (비수반 강화)', desc: '행동과 무관하게 일정 간격으로 관심/상호작용 제공. 관심 결핍을 선제적으로 해소', ncaep: true },
-      { name: '프라이밍', desc: '활동 전 미리 예고·연습하여 불안 감소 및 적절한 참여행동 촉진', ncaep: true },
+      { name: 'NCR (비유관 강화)', desc: '행동과 무관하게 일정 간격으로 관심/상호작용 제공. 관심 결핍을 선제적으로 해소', ncaep: true },
+      { name: '사전연습/예고', desc: '활동 전 미리 예고·연습하여 불안 감소 및 적절한 참여행동 촉진', ncaep: true },
       { name: '환경 재구조화', desc: '좌석 배치, 교사 근접성 조정으로 적절한 관심 획득 기회 구조화', ncaep: false },
       { name: '또래 짝짓기', desc: '적절한 상호작용 모델이 되는 또래와 짝을 지어 긍정적 관심 획득 기회 제공', ncaep: true },
       { name: '역할 부여', desc: '학급 내 역할(도우미, 발표자)을 부여하여 적절한 방식으로 관심을 받을 기회 제공', ncaep: false },
@@ -811,7 +794,7 @@ const EBP_DB = {
       { name: '선택권 제공', desc: '과제 순서, 재료, 장소 등에 대한 선택 기회 제공으로 통제감 증가', ncaep: false },
       { name: '행동 모멘텀', desc: '쉬운 요구 2~3개 → 어려운 요구 순서로 제시. 순응 모멘텀 형성', ncaep: true },
       { name: '시각적 일과표', desc: '활동 순서와 종료 시점을 시각적으로 예측 가능하게 구조화', ncaep: true },
-      { name: '프라이밍', desc: '다음 활동/과제를 미리 소개하여 전환 불안 감소', ncaep: true },
+      { name: '사전연습/예고', desc: '다음 활동/과제를 미리 소개하여 전환 불안 감소', ncaep: true },
       { name: '선호 삽입/선호 산재', desc: '비선호 과제 사이에 선호 활동을 삽입하여 전체 과제 혐오성 감소', ncaep: false },
       { name: 'First-Then 보드', desc: '"먼저~하면 그다음~" 시각적 제시. 비선호 과제 후 강화 예고', ncaep: true },
       { name: '무오류 학습', desc: '즉각적 촉구로 오류 최소화 → 성공 경험 극대화 → 과제 혐오 감소', ncaep: false },
@@ -825,7 +808,7 @@ const EBP_DB = {
       { name: '이완 훈련/자기조절 전략', desc: '심호흡, 근이완, 마음챙김 등 과제 관련 불안/좌절 관리 기술 교수', ncaep: false },
       { name: '도움 요청 기술', desc: '"모르겠어요", "다시 설명해주세요" 등 적절한 도움 요청 반응 교수', ncaep: false },
       { name: '과제 분석/과제 세분화', desc: '복잡한 과제를 작은 단계로 분해하여 각 단계 독립 수행 교수', ncaep: true },
-      { name: '자기교시 훈련', desc: '"먼저~하고, 다음에~하면 돼" 자기 언어적 안내 전략 교수', ncaep: false },
+      { name: '자기지시 훈련', desc: '"먼저~하고, 다음에~하면 돼" 자기 언어적 안내 전략 교수', ncaep: false },
     ],
     '후속결과 중재': [
       { name: 'DRA (대체행동 차별강화)', desc: '적절한 도움 요청/과제 참여에 강화, 회피 행동에는 강화 차단', ncaep: true },
@@ -866,7 +849,7 @@ const EBP_DB = {
     '선행사건 중재': [
       { name: 'First-Then 보드', desc: '"먼저~하면 그다음~할 수 있어" 시각적 제시. 원하는 물건/활동의 획득 조건 명확화', ncaep: true },
       { name: '선택권 제공', desc: '사용 가능한 물건/활동 중 선택 기회 제공으로 통제감 증가', ncaep: false },
-      { name: 'NCR (비수반 강화)', desc: '선호 물건/활동에 일정 간격 무조건 접근 기회 제공. 결핍 상태 해소', ncaep: true },
+      { name: 'NCR (비유관 강화)', desc: '선호 물건/활동에 일정 간격 무조건 접근 기회 제공. 결핍 상태 해소', ncaep: true },
       { name: '거절 사전 예고', desc: '"오늘은 ○○를 쓸 수 없어요" 사전 안내 + 대안 제시', ncaep: false },
       { name: '시각적 스케줄', desc: '언제 원하는 물건/활동에 접근할 수 있는지 시각적으로 예측 가능하게', ncaep: true },
       { name: '풍부한 환경 제공', desc: '선호 자극이 비수반적으로 제공되는 환경 조성으로 결핍 감소', ncaep: false },

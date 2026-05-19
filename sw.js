@@ -1,7 +1,7 @@
-// FBA-BIP 통합 도구 Service Worker
-// 오프라인 우선(precache) + 네트워크 폴백
+// FBA-BIP 통합 도구 Service Worker v1.2.0
+// Stale-While-Revalidate: 캐시로 빠르게 표시 + 백그라운드에서 새 버전 받아오기
 
-const CACHE_VERSION = 'fba-bip-v1.0.0';
+const CACHE_VERSION = 'fba-bip-v1.2.0';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -11,14 +11,12 @@ const CORE_ASSETS = [
   './icons/icon-512.png'
 ];
 
-// 설치: 핵심 자산 캐싱
+// 설치
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => {
-      return cache.addAll(CORE_ASSETS).catch((err) => {
-        console.warn('[SW] 일부 자산 캐싱 실패:', err);
-      });
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_VERSION)
+      .then((cache) => cache.addAll(CORE_ASSETS).catch(() => {}))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -31,29 +29,27 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 패치 전략: cache-first → network fallback → 캐시에 동적 추가
+// 패치: Stale-While-Revalidate
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-
-  // chrome-extension 등 비-http는 무시
   if (!req.url.startsWith('http')) return;
 
   event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-      return fetch(req).then((res) => {
-        // 같은 출처 응답만 캐싱
-        if (res && res.status === 200 && res.type === 'basic') {
-          const clone = res.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put(req, clone));
-        }
-        return res;
-      }).catch(() => {
-        // 오프라인 폴백: HTML 요청이면 index.html로
-        if (req.headers.get('accept')?.includes('text/html')) {
-          return caches.match('./index.html');
-        }
+    caches.open(CACHE_VERSION).then((cache) => {
+      return cache.match(req).then((cached) => {
+        // 백그라운드에서 새 버전 다운로드
+        const fetchPromise = fetch(req).then((networkRes) => {
+          if (networkRes && networkRes.status === 200 && networkRes.type === 'basic') {
+            cache.put(req, networkRes.clone());
+          }
+          return networkRes;
+        }).catch(() => null);
+
+        // 캐시가 있으면 즉시 반환, 없으면 네트워크 응답 대기
+        return cached || fetchPromise.then((res) =>
+          res || cache.match('./index.html')
+        );
       });
     })
   );

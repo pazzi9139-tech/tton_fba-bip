@@ -1203,7 +1203,8 @@ function saveBIP() {
     date: document.getElementById('bip-date').value,
     class: document.getElementById('bip-class').value,
     author: document.getElementById('bip-author').value,
-    team: document.getElementById('bip-team').value,
+    strengths: document.getElementById('bip-strengths').value,
+needs: document.getElementById('bip-needs').value,
     target: document.getElementById('bip-target').value,
     baseline: document.getElementById('bip-baseline').value,
     functions: document.getElementById('bip-functions').innerHTML,
@@ -1224,6 +1225,7 @@ function saveBIP() {
     schedule: document.getElementById('bip-schedule').value,
     goalShort: document.getElementById('bip-goal-short').value,
     goalLong: document.getElementById('bip-goal-long').value,
+    targetIncrease: document.getElementById('bip-target-increase').value,
     intAnt: document.getElementById('bip-int-ant').innerHTML,
     intAntCustom: document.getElementById('bip-int-ant-custom').value,
     intAlt: document.getElementById('bip-int-alt').innerHTML,
@@ -1269,7 +1271,8 @@ function loadBIP(id) {
   document.getElementById('bip-date').value = bip.date || '';
   document.getElementById('bip-class').value = bip.class || '';
   document.getElementById('bip-author').value = bip.author || '';
-  document.getElementById('bip-team').value = bip.team || '';
+  document.getElementById('bip-strengths').value = bip.strengths || '';
+document.getElementById('bip-needs').value = bip.needs || '';
   document.getElementById('bip-target').value = bip.target || '';
   document.getElementById('bip-baseline').value = bip.baseline || '';
   document.getElementById('bip-functions').innerHTML = bip.functions || '';
@@ -1290,6 +1293,7 @@ function loadBIP(id) {
   document.getElementById('bip-schedule').value = bip.schedule || '';
   document.getElementById('bip-goal-short').value = bip.goalShort || '';
   document.getElementById('bip-goal-long').value = bip.goalLong || '';
+  document.getElementById('bip-target-increase').value = bip.targetIncrease || '';
   document.getElementById('bip-int-ant').innerHTML = bip.intAnt || '';
   document.getElementById('bip-int-ant-custom').value = bip.intAntCustom || '';
   document.getElementById('bip-int-alt').innerHTML = bip.intAlt || '';
@@ -1303,6 +1307,7 @@ function loadBIP(id) {
   document.getElementById('bip-measure').value = bip.measure || '빈도';
   document.getElementById('bip-review').value = bip.review || '주1회';
   document.getElementById('bip-criteria').value = bip.criteria || '';
+  document.getElementById('bip-behavior-mirror').textContent = bip.target || '2번 \'도전행동\'에서 자동으로 가져옵니다';
 }
 
 function deleteBIP(id) {

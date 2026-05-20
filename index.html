@@ -228,7 +228,7 @@ canvas{width:100%!important;max-height:400px}
   <h1>행동중재계획(BIP) 작성 도구</h1>
   <p>기본정보 입력 및 기능선택 → EBP추천 → BIP작성 (+사회적상황이야기 도구)</p>
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
-  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.2.9 · 2026.05.20</p>
+  <p style="margin-top:2px;font-size:10px;opacity:.7">v2.0.0 · 2026.05.20</p>
 </div>
 <!-- 사용 가이드 -->
 <div style="max-width:800px;margin:0 auto;padding:8px 16px">
@@ -875,10 +875,26 @@ function loadStudentProfile() {
   const p = profiles[parseInt(idx)];
   if (!p) return;
 
+  // 기본 정보 채우기
   document.getElementById('fn-stu2').value = p.name || '';
   document.getElementById('fn-class').value = p.className || '';
   document.getElementById('fn-strengths').value = p.strengths || '';
   document.getElementById('fn-needs').value = p.needs || '';
+
+  // 나머지 필드 초기화
+  document.getElementById('fn-date').value = '';
+  document.getElementById('fn-author').value = '';
+  document.getElementById('fn-target').value = '';
+  document.getElementById('fn-baseline').value = '';
+  document.getElementById('fn-antecedent').value = '';
+  document.getElementById('fn-consequence').value = '';
+  document.getElementById('fn-hypothesis').value = '';
+  document.getElementById('fn-reinf').value = '';
+  document.getElementById('fn-schedule').value = '';
+  document.getElementById('fn-behavior-mirror').textContent = '2번 \'도전행동\'에서 자동으로 가져옵니다';
+
+  // 기능 선택 해제
+  document.querySelectorAll('.fn-card').forEach(c => c.classList.remove('selected'));
 }
 
 function deleteStudentProfile() {

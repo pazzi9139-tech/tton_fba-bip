@@ -228,7 +228,7 @@ canvas{width:100%!important;max-height:400px}
   <h1>행동중재계획(BIP) 작성 도구</h1>
   <p>기본정보 입력 및 기능선택 → EBP추천 → BIP작성 (+사회적상황이야기 도구)</p>
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
-  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.2.7 · 2026.05.20</p>
+  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.2.8 · 2026.05.20</p>
 </div>
 <!-- 사용 가이드 -->
 <div style="max-width:800px;margin:0 auto;padding:8px 16px">
@@ -1271,13 +1271,12 @@ function cbmToIntervention() {
 // ═══════════════════════════════════════
 // TAB 4: BIP 저장/불러오기
 // ═══════════════════════════════════════
-let currentBIPId = null;
 function saveBIP() {
   const stu = document.getElementById('bip-stu').value.trim();
   if (!stu) return alert('학생 이름을 입력하세요.');
 
   const bip = {
-    id: currentBIPId || Date.now(),
+    id: Date.now(),
     student: stu,
     date: document.getElementById('bip-date').value,
     class: document.getElementById('bip-class').value,
@@ -1321,15 +1320,9 @@ needs: document.getElementById('bip-needs').value,
   };
 
   const bips = LS.get('bips');
-  const existingIdx = bips.findIndex(b => b.id === bip.id);
-if (existingIdx >= 0) {
-  bips[existingIdx] = bip;
-} else {
   bips.push(bip);
-}
   LS.set('bips', bips);
   alert('BIP가 저장되었습니다.');
-  currentBIPId = bip.id;
   loadBIPList();
 }
 
@@ -1393,7 +1386,6 @@ document.getElementById('bip-needs').value = bip.needs || '';
   document.getElementById('bip-review').value = bip.review || '주1회';
   document.getElementById('bip-criteria').value = bip.criteria || '';
   document.getElementById('bip-behavior-mirror').textContent = bip.target || '2번 \'도전행동\'에서 자동으로 가져옵니다';
-  currentBIPId = id;
 }
 
 function deleteBIP(id) {

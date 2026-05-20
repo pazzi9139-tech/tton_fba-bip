@@ -228,7 +228,7 @@ canvas{width:100%!important;max-height:400px}
   <h1>행동중재계획(BIP) 작성 도구</h1>
   <p>기본정보 입력 및 기능선택 → EBP추천 → BIP작성 (+사회적상황이야기 도구)</p>
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
-  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.2.8 · 2026.05.20</p>
+  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.2.9 · 2026.05.20</p>
 </div>
 <!-- 사용 가이드 -->
 <div style="max-width:800px;margin:0 auto;padding:8px 16px">
@@ -355,7 +355,7 @@ canvas{width:100%!important;max-height:400px}
   <div id="fn-saved-list"></div>
   <!-- 참고 도구 및 자료 -->
 <div class="card" style="border:1px dashed var(--border)">
-  <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--sub)">📎 참고 도구 및 자료</div>
+  <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--sub)">📎 유용한 도구 및 자료</div>
   <div style="font-size:12px;line-height:2.2">
     <div style="margin-top:6px"><a href="https://more.goe.go.kr/pbs" target="_blank" style="color:var(--blue);text-decoration:none">🟢 경기 Be-Able (비에이블)</a><br><span style="color:var(--sub);font-size:11px">경기도교육청 특수교육 행동지원 통합 플랫폼</span></div>
     <div style="margin-top:6px"><a href="http://symbol.ksaac.or.kr" target="_blank" style="color:var(--blue);text-decoration:none">💬 KAAC 그림상징 검색</a><br><span style="color:var(--sub);font-size:11px">한국형 AAC 상징 검색 사이트 (PECS/AAC 자료 제작 시 활용)</span></div>
@@ -937,16 +937,9 @@ document.getElementById('bip-behavior-mirror').textContent = targetVal || '2번 
 }
 
 function renderFnList() {
-  const fns = LS.get('functions');
+  // 목록 비표시
   const box = document.getElementById('fn-saved-list');
-  if (!fns.length) { box.innerHTML = ''; return; }
-  box.innerHTML = '<div class="card"><div class="card-t">저장된 기능 선택</div>' +
-    fns.map(f => `<div class="hist-item">
-      <div><strong>${f.student}</strong> · ${f.behavior}<br>
-      ${f.functions.map(fn => `<span class="badge fn-badge-${fnKey(fn)}">${fn}</span>`).join(' ')}
-      </div>
-      <span class="hist-del" onclick="deleteFn(${f.id})">×</span>
-    </div>`).join('') + '</div>';
+  if (box) box.innerHTML = '';
 }
 
 function deleteFn(id) {

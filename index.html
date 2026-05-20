@@ -1071,17 +1071,36 @@ function sendToBIP() {
       document.getElementById('cbm-problem').value = fn.behavior;
     }
   }
-  // Fill intervention sections
+  // Fill intervention sections with name + desc
   ['bip-int-ant','bip-int-alt','bip-int-con'].forEach(id => document.getElementById(id).innerHTML = '');
-  if (grouped['선행사건 중재']) {
-    document.getElementById('bip-int-ant').innerHTML = grouped['선행사건 중재'].map(n => `<div class="badge" style="background:var(--blue-l);color:var(--blue);margin:2px;padding:4px 8px">${n}</div>`).join('');
-  }
-  if (grouped['대체행동 교수']) {
-    document.getElementById('bip-int-alt').innerHTML = grouped['대체행동 교수'].map(n => `<div class="badge" style="background:var(--pri-l);color:var(--pri);margin:2px;padding:4px 8px">${n}</div>`).join('');
-  }
-  if (grouped['후속결과 중재']) {
-    document.getElementById('bip-int-con').innerHTML = grouped['후속결과 중재'].map(n => `<div class="badge" style="background:var(--acc-l);color:var(--acc);margin:2px;padding:4px 8px">${n}</div>`).join('');
-  }
+  
+  const catMap = {'선행사건 중재':'bip-int-ant', '대체행동 교수':'bip-int-alt', '후속결과 중재':'bip-int-con'};
+  const catStyle = {
+    '선행사건 중재': 'background:var(--blue-l);border-left:3px solid var(--blue)',
+    '대체행동 교수': 'background:var(--pri-l);border-left:3px solid var(--pri)',
+    '후속결과 중재': 'background:var(--acc-l);border-left:3px solid var(--acc)'
+  };
+
+  // 선택된 기능 목록 가져오기
+  const fnIdx = document.getElementById('ebp-load').value;
+  const fnList = fnIdx !== '' ? LS.get('functions')[parseInt(fnIdx)].functions : [];
+
+  Object.entries(catMap).forEach(([cat, targetId]) => {
+    const names = grouped[cat];
+    if (!names) return;
+    document.getElementById(targetId).innerHTML = names.map(name => {
+      // EBP_DB에서 desc 찾기
+      let desc = '';
+      for (const fn of fnList) {
+        const found = (EBP_DB[fn]?.[cat] || []).find(e => e.name === name);
+        if (found) { desc = found.desc; break; }
+      }
+      return `<div style="padding:6px 10px;margin:4px 0;border-radius:6px;font-size:12px;${catStyle[cat]}">
+        <strong>${name}</strong>
+        ${desc ? `<div style="color:var(--sub);margin-top:2px;font-size:11px">${desc}</div>` : ''}
+      </div>`;
+    }).join('');
+  });
   document.getElementById('bip-date').value = new Date().toISOString().split('T')[0];
 }
 

@@ -1590,13 +1590,24 @@ const sec3 = sec3fn + contentRow('선행사건 (A)', 'bip-antecedent') + sec3beh
 
   document.getElementById('pdf-section-picker').style.display = 'none';
 
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write(printHtml);
-    printWindow.document.close();
-  } else {
-    alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
-  }
+  const printFrame = document.createElement('iframe');
+printFrame.style.position = 'fixed';
+printFrame.style.top = '-9999px';
+printFrame.style.left = '-9999px';
+printFrame.style.width = '0';
+printFrame.style.height = '0';
+document.body.appendChild(printFrame);
+
+printFrame.contentDocument.write(printHtml);
+printFrame.contentDocument.close();
+
+printFrame.contentWindow.onafterprint = function() {
+  document.body.removeChild(printFrame);
+};
+
+setTimeout(function() {
+  printFrame.contentWindow.print();
+}, 500);
 }
 
 // ═══════════════════════════════════════

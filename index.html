@@ -272,6 +272,13 @@ canvas{width:100%!important;max-height:400px}
 <div class="card">
   <div class="bip-section">
     <div class="bip-section-title">1. 기본 정보</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+  <select id="student-profiles" onchange="loadStudentProfile()" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px">
+    <option value="">저장된 학생 불러오기</option>
+  </select>
+  <button class="btn btn-pri btn-sm" onclick="saveStudentProfile()">💾 저장</button>
+  <button class="btn btn-out btn-sm" onclick="deleteStudentProfile()">🗑️</button>
+</div>
     <div class="row">
       <div class="fg"><label>학생 이름</label><input type="text" id="fn-stu2" placeholder="학생 이름"></div>
       <div class="fg"><label>작성일</label><input type="date" id="fn-date"></div>
@@ -816,7 +823,78 @@ function downloadFile(content, filename, type) {
 // TAB 2: 기능 선택
 // ═══════════════════════════════════════
 function toggleFn(el) { el.classList.toggle('selected'); }
+// ═══════════════════════════════════════
+// 학생 프로필 저장/불러오기/삭제
+// ═══════════════════════════════════════
+function getStudentProfiles() {
+  return JSON.parse(localStorage.getItem('studentProfiles') || '[]');
+}
 
+function renderStudentProfiles() {
+  const select = document.getElementById('student-profiles');
+  if (!select) return;
+  const profiles = getStudentProfiles();
+  select.innerHTML = '<option value="">저장된 학생 불러오기</option>';
+  profiles.forEach((p, i) => {
+    select.innerHTML += `<option value="${i}">${p.name} (${p.className || ''})</option>`;
+  });
+}
+
+function saveStudentProfile() {
+  const name = document.getElementById('fn-stu2').value.trim();
+  if (!name) return alert('학생 이름을 입력하세요.');
+
+  const profile = {
+    name: name,
+    className: document.getElementById('fn-class').value,
+    strengths: document.getElementById('fn-strengths').value,
+    needs: document.getElementById('fn-needs').value
+  };
+
+  const profiles = getStudentProfiles();
+  const existing = profiles.findIndex(p => p.name === name);
+  if (existing >= 0) {
+    if (confirm(`'${name}' 프로필이 이미 있습니다. 덮어쓸까요?`)) {
+      profiles[existing] = profile;
+    } else return;
+  } else {
+    profiles.push(profile);
+  }
+
+  localStorage.setItem('studentProfiles', JSON.stringify(profiles));
+  renderStudentProfiles();
+  alert(`'${name}' 프로필이 저장되었습니다.`);
+}
+
+function loadStudentProfile() {
+  const select = document.getElementById('student-profiles');
+  const idx = select.value;
+  if (idx === '') return;
+
+  const profiles = getStudentProfiles();
+  const p = profiles[parseInt(idx)];
+  if (!p) return;
+
+  document.getElementById('fn-stu2').value = p.name || '';
+  document.getElementById('fn-class').value = p.className || '';
+  document.getElementById('fn-strengths').value = p.strengths || '';
+  document.getElementById('fn-needs').value = p.needs || '';
+}
+
+function deleteStudentProfile() {
+  const select = document.getElementById('student-profiles');
+  const idx = select.value;
+  if (idx === '') return alert('삭제할 학생을 선택하세요.');
+
+  const profiles = getStudentProfiles();
+  const name = profiles[parseInt(idx)].name;
+  if (!confirm(`'${name}' 프로필을 삭제할까요?`)) return;
+
+  profiles.splice(parseInt(idx), 1);
+  localStorage.setItem('studentProfiles', JSON.stringify(profiles));
+  renderStudentProfiles();
+  alert('삭제되었습니다.');
+}
 function saveFnSelection() {
   const stu = document.getElementById('fn-stu2').value.trim();
   if (!stu) return alert('학생 이름을 입력하세요.');
@@ -1880,6 +1958,7 @@ showTab = function(i) {
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
+renderStudentProfiles();
 // 2번 도전행동 → 3번 행동(B) 자동 반영
 document.getElementById('fn-target').addEventListener('input', function() {
   document.getElementById('fn-behavior-mirror').textContent = this.value || '2번 \'도전행동\'에서 자동으로 가져옵니다';

@@ -1268,42 +1268,43 @@ function exportBIPPdf() {
   if (checked.size === 0) { alert('최소 1개 섹션을 선택해주세요.'); return; }
 
   // 각 섹션 HTML 조각
+// 헬퍼: 값이 있을 때만 행 생성
+  const row = (label, id) => {
+    const v = getValue(id);
+    return v ? `<div class="row"><span class="label">${label}:</span> ${v}</div>` : '';
+  };
+  const contentRow = (label, id) => {
+    const v = getValue(id);
+    return v ? `<div class="row"><span class="label">${label}:</span></div><div class="content">${v}</div>` : '';
+  };
+  const contentOnly = (id) => {
+    const v = getValue(id);
+    return v ? `<div class="content">${v}</div>` : '';
+  };
+
   const sections = {};
 
-  sections.basic = `
-  <div class="section">
-    <div class="section-title">1. 기본 정보</div>
-    <div class="row"><span class="label">학생:</span> ${getValue('bip-stu')}</div>
-    <div class="row"><span class="label">학급:</span> ${getValue('bip-class')}</div>
-    <div class="row"><span class="label">작성자:</span> ${getValue('bip-author')}</div>
-    <div class="row"><span class="label">작성일:</span> ${getValue('bip-date')}</div>
-    <div class="row"><span class="label">팀 구성원:</span> ${getValue('bip-team')}</div>
-  </div>`;
+  // 1. 기본 정보
+  const sec1 = row('학생', 'bip-stu') + row('학급', 'bip-class') + row('작성자', 'bip-author') + row('작성일', 'bip-date') + row('팀 구성원', 'bip-team');
+  sections.basic = sec1 ? `<div class="section"><div class="section-title">1. 기본 정보</div>${sec1}</div>` : '';
 
-  sections.target = `
-  <div class="section">
-    <div class="section-title">2. 목표 행동 조작적 정의</div>
-    <div class="content">${getValue('bip-target')}</div>
-    <div class="row" style="margin-top:6px"><span class="label">현재 수준:</span> ${getValue('bip-baseline')}</div>
-  </div>`;
+  // 2. 목표 행동
+  const sec2 = contentOnly('bip-target') + row('현재 수준', 'bip-baseline');
+  sections.target = sec2 ? `<div class="section"><div class="section-title">2. 목표 행동 조작적 정의</div>${sec2}</div>` : '';
 
-  sections.fba = `
-  <div class="section">
-    <div class="section-title">3. FBA 결과 요약</div>
-    <div class="row"><span class="label">행동의 기능:</span> ${getFnBadges()}</div>
-    <div class="row"><span class="label">선행사건:</span></div>
-    <div class="content">${getValue('bip-antecedent')}</div>
-    <div class="row"><span class="label">후속결과:</span></div>
-    <div class="content">${getValue('bip-consequence')}</div>
-    <div class="row"><span class="label">가설 진술:</span></div>
-    <div class="content">${getValue('bip-hypothesis')}</div>
-  </div>`;
+  // 3. FBA 결과 요약
+  const sec3fn = getFnBadges() !== '(미선택)' ? `<div class="row"><span class="label">행동의 기능:</span> ${getFnBadges()}</div>` : '';
+  const sec3 = sec3fn + contentRow('선행사건', 'bip-antecedent') + contentRow('후속결과', 'bip-consequence') + contentRow('가설 진술', 'bip-hypothesis');
+  sections.fba = sec3 ? `<div class="section"><div class="section-title">3. FBA 결과 요약</div>${sec3}</div>` : '';
 
-  sections.cbm = `
+  // 3.5 경쟁행동모델
+  const cbmFields = ['cbm-antecedent','cbm-problem','cbm-maintaining','cbm-desired','cbm-desired-result','cbm-alternative','cbm-alt-result'];
+  const cbmStrats = ['cbm-strat-ant','cbm-strat-teach','cbm-strat-con'];
+  const hasCbm = cbmFields.some(id => getValue(id)) || cbmStrats.some(id => getValue(id));
+  sections.cbm = hasCbm ? `
   <div class="section">
     <div class="section-title">3.5 경쟁행동모델 (CBM)</div>
     <div style="border:1px solid #ccc;border-radius:8px;padding:16px;margin:8px 0;background:#faf8fc">
-      
       <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px">
         <div style="width:28%;min-width:80px"></div>
         <div style="background:#d5f5e3;border:2px solid #27ae60;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
@@ -1316,9 +1317,7 @@ function exportBIPPdf() {
           <div style="font-size:11px;margin-top:4px">${getValue('cbm-desired-result') || '-'}</div>
         </div>
       </div>
-
       <div style="text-align:center;color:#8e44ad;font-size:11px;margin:2px 0">↑ 경쟁 ↑</div>
-
       <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0">
         <div style="background:#fdebd0;border:2px solid #e67e22;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
           <div style="font-size:9px;color:#e67e22;font-weight:700">선행사건</div>
@@ -1335,9 +1334,7 @@ function exportBIPPdf() {
           <div style="font-size:11px;margin-top:4px">${getValue('cbm-maintaining') || '-'}</div>
         </div>
       </div>
-
       <div style="text-align:center;color:#8e44ad;font-size:11px;margin:2px 0">↓ 경쟁 ↓</div>
-
       <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px">
         <div style="width:28%;min-width:80px"></div>
         <div style="background:#d6eaf8;border:2px solid #2e86c1;border-radius:8px;padding:8px 10px;flex:1;max-width:180px;text-align:center">
@@ -1350,54 +1347,44 @@ function exportBIPPdf() {
           <div style="font-size:11px;margin-top:4px">${getValue('cbm-alt-result') || '-'}</div>
         </div>
       </div>
-
     </div>
-    <div class="strat-box strat-ant"><strong>선행사건 중재:</strong> ${getValue('cbm-strat-ant')}</div>
-    <div class="strat-box strat-teach"><strong>교수 전략:</strong> ${getValue('cbm-strat-teach')}</div>
-    <div class="strat-box strat-con"><strong>후속결과 전략:</strong> ${getValue('cbm-strat-con')}</div>
-  </div>`;
+    ${getValue('cbm-strat-ant') ? `<div class="strat-box strat-ant"><strong>선행사건 중재:</strong> ${getValue('cbm-strat-ant')}</div>` : ''}
+    ${getValue('cbm-strat-teach') ? `<div class="strat-box strat-teach"><strong>교수 전략:</strong> ${getValue('cbm-strat-teach')}</div>` : ''}
+    ${getValue('cbm-strat-con') ? `<div class="strat-box strat-con"><strong>후속결과 전략:</strong> ${getValue('cbm-strat-con')}</div>` : ''}
+  </div>` : '';
 
-  sections.reinf = `
-  <div class="section">
-    <div class="section-title">4. 강화제 정보</div>
-    <div class="content">${getValue('bip-reinf')}</div>
-    <div class="row"><span class="label">강화 스케줄:</span> ${getValue('bip-schedule')}</div>
-  </div>`;
+  // 5. 강화제 정보
+  const sec5 = contentOnly('bip-reinf') + row('강화 스케줄', 'bip-schedule');
+  sections.reinf = sec5 ? `<div class="section"><div class="section-title">5. 강화제 정보</div>${sec5}</div>` : '';
 
-  sections.goal = `
-  <div class="section">
-    <div class="section-title">6. 목표 설정</div>
-    <div class="row"><span class="label">단기 목표:</span></div>
-    <div class="content">${getValue('bip-goal-short')}</div>
-    <div class="row"><span class="label">장기 목표:</span></div>
-    <div class="content">${getValue('bip-goal-long')}</div>
-  </div>`;
+  // 6. 목표 설정
+  const sec6 = contentRow('단기 목표', 'bip-goal-short') + contentRow('장기 목표', 'bip-goal-long');
+  sections.goal = sec6 ? `<div class="section"><div class="section-title">6. 목표 설정</div>${sec6}</div>` : '';
 
-  sections.intervention = `
-  <div class="section">
-    <div class="section-title">7. 중재 방법</div>
-    <div class="strat-box strat-ant"><strong>선행사건 중재 (예방):</strong><br>${getValue('bip-int-ant-custom') || '(EBP에서 선택된 중재 참조)'}</div>
-    <div class="strat-box strat-teach"><strong>대체행동 교수:</strong><br>${getValue('bip-int-alt-custom') || '(EBP에서 선택된 중재 참조)'}</div>
-    <div class="strat-box strat-con"><strong>후속결과 중재:</strong><br>${getValue('bip-int-con-custom') || '(EBP에서 선택된 중재 참조)'}</div>
-  </div>`;
+  // 7. 중재 방법
+  const int1 = getValue('bip-int-ant-custom');
+  const int2 = getValue('bip-int-alt-custom');
+  const int3 = getValue('bip-int-con-custom');
+  const sec7 = (int1 || int2 || int3) ? [
+    int1 ? `<div class="strat-box strat-ant"><strong>선행사건 중재 (예방):</strong><br>${int1}</div>` : '',
+    int2 ? `<div class="strat-box strat-teach"><strong>대체행동 교수:</strong><br>${int2}</div>` : '',
+    int3 ? `<div class="strat-box strat-con"><strong>후속결과 중재:</strong><br>${int3}</div>` : ''
+  ].join('') : '';
+  sections.intervention = sec7 ? `<div class="section"><div class="section-title">7. 중재 방법</div>${sec7}</div>` : '';
 
-  sections.crisis = `
-  <div class="section">
-    <div class="section-title">8. 위기 관리 계획</div>
-    <div class="crisis c1"><strong>🟢 1단계 (예방):</strong> ${getValue('bip-crisis-1')}</div>
-    <div class="crisis c2"><strong>🟡 2단계 (완화):</strong> ${getValue('bip-crisis-2')}</div>
-    <div class="crisis c3"><strong>🟠 3단계 (대처):</strong> ${getValue('bip-crisis-3')}</div>
-    <div class="crisis c4"><strong>🔴 4단계 (회복):</strong> ${getValue('bip-crisis-4')}</div>
-  </div>`;
+  // 8. 위기 관리 계획
+  const cr1 = getValue('bip-crisis-1'), cr2 = getValue('bip-crisis-2'), cr3 = getValue('bip-crisis-3'), cr4 = getValue('bip-crisis-4');
+  const sec8 = (cr1 || cr2 || cr3 || cr4) ? [
+    cr1 ? `<div class="crisis c1"><strong>🟢 1단계 (예방):</strong> ${cr1}</div>` : '',
+    cr2 ? `<div class="crisis c2"><strong>🟡 2단계 (완화):</strong> ${cr2}</div>` : '',
+    cr3 ? `<div class="crisis c3"><strong>🟠 3단계 (대처):</strong> ${cr3}</div>` : '',
+    cr4 ? `<div class="crisis c4"><strong>🔴 4단계 (회복):</strong> ${cr4}</div>` : ''
+  ].join('') : '';
+  sections.crisis = sec8 ? `<div class="section"><div class="section-title">8. 위기 관리 계획</div>${sec8}</div>` : '';
 
-  sections.data = `
-  <div class="section">
-    <div class="section-title">9. 데이터 수집 및 검토 계획</div>
-    <div class="row"><span class="label">측정 방법:</span> ${getValue('bip-measure')}</div>
-    <div class="row"><span class="label">검토 주기:</span> ${getValue('bip-review')}</div>
-    <div class="row"><span class="label">검토 기준:</span></div>
-    <div class="content">${getValue('bip-criteria')}</div>
-  </div>`;
+  // 9. 데이터 수집 및 검토 계획
+  const sec9 = row('측정 방법', 'bip-measure') + row('검토 주기', 'bip-review') + contentRow('검토 기준', 'bip-criteria');
+  sections.data = sec9 ? `<div class="section"><div class="section-title">9. 데이터 수집 및 검토 계획</div>${sec9}</div>` : '';
 
   // 선택된 섹션만 조합
   const sectionOrder = ['basic','target','fba','cbm','reinf','goal','intervention','crisis','data'];

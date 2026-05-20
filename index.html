@@ -855,7 +855,7 @@ const EBP_DB = {
       { name: '사회적 이야기', desc: '적절한 관심 요청 방법과 기다리기를 사회상황이야기로 교수', ncaep: true },
       { name: '또래 매개 중재', desc: '또래가 적절한 관심 제공자·모델 역할. 또래 버디, 또래 교수 등', ncaep: true },
       { name: '비디오 모델링', desc: '적절한 관심 요청 행동을 비디오로 시연하고 모방 연습', ncaep: true },
-      { name: '스크립팅/스크립트 페이딩', desc: '관심 요청 대화 스크립트를 제공하고 점진적으로 제거', ncaep: false },
+      { name: '스크립팅/스크립트 페이딩', desc: '관심 요청 대화 스크립트를 제공하고 점진적으로 제거', ncaep: true },
       { name: '자기관리', desc: '적절한 관심 요청 횟수를 스스로 기록하고 자기강화', ncaep: true },
     ],
     '후속결과 중재': [
@@ -1017,25 +1017,19 @@ function renderEBPList(functions) {
 
   box.innerHTML = html || '<div class="empty-msg">선택된 기능이 없습니다.</div>';
 
-  // Make items toggleable for detail
-  document.querySelectorAll('.ebp-item').forEach(item => {
-    item.addEventListener('dblclick', function() {
-      const detail = this.nextElementSibling;
-      if (detail && detail.classList.contains('ebp-detail')) {
-        detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
-      }
-    });
-  });
 }
 
 function toggleEBP(name, cat, el) {
   const idx = selectedEBPs.findIndex(s => s.name === name);
+  const detail = el.nextElementSibling;
   if (idx >= 0) {
     selectedEBPs.splice(idx, 1);
     el.classList.remove('selected');
+    if (detail && detail.classList.contains('ebp-detail')) detail.style.display = 'none';
   } else {
     selectedEBPs.push({ name, category: cat });
     el.classList.add('selected');
+    if (detail && detail.classList.contains('ebp-detail')) detail.style.display = 'block';
   }
   updateEBPSummary();
 }
@@ -1297,7 +1291,15 @@ function exportBIPPdf() {
   const sec3 = sec3fn + contentRow('선행사건', 'bip-antecedent') + contentRow('후속결과', 'bip-consequence') + contentRow('가설 진술', 'bip-hypothesis');
   sections.fba = sec3 ? `<div class="section"><div class="section-title">3. FBA 결과 요약</div>${sec3}</div>` : '';
 
-  // 3.5 경쟁행동모델
+  // 4. 강화제 정보
+  const sec5 = contentOnly('bip-reinf') + row('강화 스케줄', 'bip-schedule');
+  sections.reinf = sec5 ? `<div class="section"><div class="section-title">5. 강화제 정보</div>${sec5}</div>` : '';
+
+   // 5. 목표 설정
+  const sec6 = contentRow('표적행동', 'bip-target-increase') + contentRow('단기 목표', 'bip-goal-short') + contentRow('장기 목표', 'bip-goal-long');
+  sections.goal = sec6 ? `<div class="section"><div class="section-title">6. 목표 설정</div>${sec6}</div>` : '';
+
+  // 6. 경쟁행동모델
   const cbmFields = ['cbm-antecedent','cbm-problem','cbm-maintaining','cbm-desired','cbm-desired-result','cbm-alternative','cbm-alt-result'];
   const cbmStrats = ['cbm-strat-ant','cbm-strat-teach','cbm-strat-con'];
   const hasCbm = cbmFields.some(id => getValue(id)) || cbmStrats.some(id => getValue(id));
@@ -1352,14 +1354,6 @@ function exportBIPPdf() {
     ${getValue('cbm-strat-teach') ? `<div class="strat-box strat-teach"><strong>교수 전략:</strong> ${getValue('cbm-strat-teach')}</div>` : ''}
     ${getValue('cbm-strat-con') ? `<div class="strat-box strat-con"><strong>후속결과 전략:</strong> ${getValue('cbm-strat-con')}</div>` : ''}
   </div>` : '';
-
-  // 5. 강화제 정보
-  const sec5 = contentOnly('bip-reinf') + row('강화 스케줄', 'bip-schedule');
-  sections.reinf = sec5 ? `<div class="section"><div class="section-title">5. 강화제 정보</div>${sec5}</div>` : '';
-
-  // 6. 목표 설정
-  const sec6 = contentRow('표적행동', 'bip-target-increase') + contentRow('단기 목표', 'bip-goal-short') + contentRow('장기 목표', 'bip-goal-long');
-  sections.goal = sec6 ? `<div class="section"><div class="section-title">6. 목표 설정</div>${sec6}</div>` : '';
 
   // 7. 중재 방법
   const int1 = getValue('bip-int-ant-custom');

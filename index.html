@@ -386,6 +386,7 @@ canvas{width:100%!important;max-height:400px}
     <div class="bip-section">
       <div class="bip-section-title">5. 목표 설정</div>
       <div class="bip-2col">
+        <div class="fg"><label>목표행동(표적행동, 증가시킬 행동)</label><textarea id="bip-target-increase" placeholder="예: 도움 요청 카드를 사용하여 적절하게 도움 요청하기"></textarea></div>
         <div class="fg"><label>단기 목표 (2~4주)</label><textarea id="bip-goal-short" placeholder="예: 과제 거부 행동을 하루 평균 4.2회에서 2회 이하로 감소"></textarea></div>
         <div class="fg"><label>장기 목표 (학기)</label><textarea id="bip-goal-long" placeholder="예: 어려운 과제 상황에서 도움 요청 카드를 독립적으로 사용"></textarea></div>
       </div>
@@ -1357,7 +1358,7 @@ function exportBIPPdf() {
   sections.reinf = sec5 ? `<div class="section"><div class="section-title">5. 강화제 정보</div>${sec5}</div>` : '';
 
   // 6. 목표 설정
-  const sec6 = contentRow('단기 목표', 'bip-goal-short') + contentRow('장기 목표', 'bip-goal-long');
+  const sec6 = contentRow('표적행동', 'bip-target-increase') + contentRow('단기 목표', 'bip-goal-short') + contentRow('장기 목표', 'bip-goal-long');
   sections.goal = sec6 ? `<div class="section"><div class="section-title">6. 목표 설정</div>${sec6}</div>` : '';
 
   // 7. 중재 방법

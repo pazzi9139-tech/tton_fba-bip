@@ -286,7 +286,6 @@ canvas{width:100%!important;max-height:400px}
 <div class="card">
     <div class="card-t">① 행동 기능 직접 선택</div>
     <div class="card-d">FBA(직접관찰, 면담, MAS/FAST 등)를 통해 파악한 기능을 선택하세요. 복수 선택 가능합니다.</div>
-    <div class="fg"><label>목표 행동</label><input type="text" id="fn-beh" placeholder="조작적 정의 (간략)"></div>
     <div class="fn-grid" id="fn-grid">
       <div class="fn-card" data-fn="관심끌기" onclick="toggleFn(this)">
         <div class="fn-icon">👀</div>
@@ -773,13 +772,13 @@ function toggleFn(el) { el.classList.toggle('selected'); }
 
 function saveFnSelection() {
   const stu = document.getElementById('fn-stu2').value.trim();
-  const beh = document.getElementById('fn-beh').value.trim();
-  if (!stu || !beh) return alert('학생 이름과 목표 행동을 입력하세요.');
+  if (!stu) return alert('학생 이름을 입력하세요.');
   const selected = [...document.querySelectorAll('.fn-card.selected')].map(c => c.dataset.fn);
   if (!selected.length) return alert('기능을 하나 이상 선택하세요.');
 
   const fns = LS.get('functions');
-  fns.push({ student: stu, behavior: beh, functions: selected, date: new Date().toISOString(), id: Date.now() });
+  const beh = document.getElementById('fn-target')?.value?.trim() || '';
+fns.push({ student: stu, behavior: beh, functions: selected, date: new Date().toISOString(), id: Date.now() });
   LS.set('functions', fns);
 
   // BIP 탭으로 자동 복사

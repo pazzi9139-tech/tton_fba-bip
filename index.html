@@ -226,13 +226,13 @@ canvas{width:100%!important;max-height:400px}
 
 <div class="header">
   <h1>행동중재계획(BIP) 작성 도구</h1>
-  <p>기능선택 → EBP추천 → BIP작성 → 사회적상황이야기</p>
+  <p>기본정보 입력 및 기능선택 → EBP추천 → BIP작성 → 사회적상황이야기</p>
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
-  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.1.6 · 2026.05.19</p>
+  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.2.0 · 2026.05.20</p>
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="showTab(0)"><div class="num">1</div><br>기능선택</div>
+  <div class="tab active" onclick="showTab(0)"><div class="num">1</div><br>기본정보 입력 및 기능선택</div>
   <div class="tab" onclick="showTab(1)"><div class="num">2</div><br>증거기반실제(EBP)추천</div>
   <div class="tab" onclick="showTab(2)"><div class="num">3</div><br>행동중재계획(BIP)작성</div>
   <div class="tab tab-ss" onclick="goToSocialStory()"><div class="num">4</div><br>사회적상황이야기</div>
@@ -249,10 +249,10 @@ canvas{width:100%!important;max-height:400px}
       <div class="fg"><label>작성일</label><input type="date" id="fn-date"></div>
     </div>
     <div class="row">
-      <div class="fg"><label>학년/학급</label><input type="text" id="fn-class" placeholder="예: 3학년 해바라기반"></div>
+      <div class="fg"><label>학년/학급</label><input type="text" id="fn-class" placeholder="예: 3학년 1반"></div>
       <div class="fg"><label>작성자</label><input type="text" id="fn-author" placeholder="작성자 이름"></div>
     </div>
-    <div class="fg"><label>팀 구성원</label><input type="text" id="fn-team" placeholder="예: 담임, 특수교사, 보조원, 보호자"></div>
+    <div class="fg"><label>팀 구성원</label><input type="text" id="fn-team" placeholder="예: 통합교사, 특수교사, 관리자, 보호자"></div>
   </div>
 </div>
 
@@ -261,7 +261,7 @@ canvas{width:100%!important;max-height:400px}
   <div class="bip-section">
     <div class="bip-section-title">2. 목표 행동</div>
     <div class="fg"><label>도전행동</label><textarea id="fn-target" placeholder="관찰 가능하고 측정 가능한 용어로 기술&#10;예: 교사의 지시 후 5초 이내에 과제물을 바닥에 던지거나 찢는 행동"></textarea></div>
-    <div class="fg"><label>현재 수준 (기초선)</label><textarea id="fn-baseline" placeholder="예: 하루 평균 4.2회, 주로 국어/수학 시간에 발생"></textarea></div>
+    <div class="fg"><label>행동 발생 현황</label><textarea id="fn-baseline" placeholder="예: 하루 평균 4회, 주로 00 시간에 발생"></textarea></div>
   </div>
 </div>
 
@@ -271,7 +271,7 @@ canvas{width:100%!important;max-height:400px}
     <div class="bip-section-title">3. FBA 결과 요약</div>
     <div class="fg"><label>선행사건 (배경/직전)</label><textarea id="fn-antecedent" placeholder="배경사건: 수면 부족, 아침 결식&#10;직전 선행사건: 어려운 과제 제시, 선호활동 중단 요구"></textarea></div>
     <div class="fg"><label>후속결과 (유지 변인)</label><textarea id="fn-consequence" placeholder="과제 제거/지연, 또래 관심, 감각 자극 획득 등"></textarea></div>
-    <div class="fg"><label>가설 진술</label><textarea id="fn-hypothesis" placeholder="[선행사건]이 있을 때 [학생]은 [행동]을 하며, 그 결과 [기능]을 달성한다."></textarea></div>
+    <div class="fg"><label>가설 진술</label><textarea id="fn-hypothesis" placeholder="[선행사건]이 있을 때 [학생]은 [행동]을 하며, 그 결과 [기능]을 달성할 것이다."></textarea></div>
   </div>
 </div>
 
@@ -279,8 +279,8 @@ canvas{width:100%!important;max-height:400px}
 <div class="card">
   <div class="bip-section">
     <div class="bip-section-title">4. 강화제 정보</div>
-    <div class="fg"><label>선호 강화제</label><textarea id="fn-reinf" placeholder="사회적: 칭찬, 하이파이브&#10;활동: 태블릿, 그리기&#10;실물: 스티커, 간식"></textarea></div>
-    <div class="fg"><label>강화 스케줄</label><input type="text" id="fn-schedule" placeholder="예: 연속강화(CRF) → 점진적으로 FR3으로 감소"></div>
+    <div class="fg"><label>사용할 수 있는 강화제</label><textarea id="fn-reinf" placeholder="사회적: 칭찬, 하이파이브&#10;활동: 태블릿, 그리기&#10;실물: 스티커, 간식"></textarea></div>
+    <div class="fg"><label>강화 방법 및 빈도</label><input type="text" id="fn-schedule" placeholder="예: 연속강화(CRF) → 점진적으로 FR3으로 감소"></div>
   </div>
 </div>
 <div class="card">
@@ -1830,7 +1830,7 @@ if (location.hash === '#bip') {
 </script>
     <!-- ══ 저작권 표기 ══ -->
 <div style="text-align:center;padding:24px 16px;font-size:11px;color:#999;line-height:1.7;border-top:1px solid var(--border);margin-top:20px">
-© 2026 <strong style="color:var(--pri)">특수교사 이노아 · 연구회 뜨온</strong><br>
+© 2026 <span style="color:var(--pri)">특수교사 이노아 · 연구회 뜨온</span><br>
   All rights reserved. 무단 복제 · 재배포 금지<br>
   <span style="font-size:10px;color:#bbb">문의: rt615@naver.com · 카카오톡 오픈채팅 "행동중재 도구 피드백"</span>
 </div>

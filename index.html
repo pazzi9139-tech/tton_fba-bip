@@ -230,7 +230,35 @@ canvas{width:100%!important;max-height:400px}
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
   <p style="margin-top:2px;font-size:10px;opacity:.7">v1.2.3 · 2026.05.20</p>
 </div>
+<!-- 사용 가이드 -->
+<div style="max-width:800px;margin:0 auto;padding:8px 16px">
+  <div class="card" id="guide-card" style="border:1px dashed var(--pri);background:var(--pri-l)">
+    <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="document.getElementById('guide-content').style.display=document.getElementById('guide-content').style.display==='none'?'block':'none'">
+      <span style="font-weight:600;font-size:13px;color:var(--pri)">📖 사용 가이드</span>
+      <span style="font-size:12px;color:var(--sub)">▼ 열기/닫기</span>
+    </div>
+    <div id="guide-content" style="display:none;margin-top:12px;font-size:12px;line-height:1.9;color:var(--text)">
 
+      <div style="font-weight:600;color:var(--pri);margin-bottom:4px">이 도구는?</div>
+      <div style="margin-bottom:10px">기능적 행동평가(FBA) 결과를 바탕으로 증거기반실제(EBP)를 추천받고, 행동중재계획(BIP)을 작성할 수 있는 특수교육 현장 도구입니다.</div>
+
+      <div style="font-weight:600;color:var(--pri);margin-bottom:4px">사용 순서</div>
+      <div style="margin-bottom:10px">
+        <span style="background:var(--pri);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">1</span> 기능선택 — 학생 기본 정보와 FBA 결과를 입력하고 행동의 기능을 선택합니다<br>
+        <span style="background:var(--pri);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">2</span> EBP 추천 — 선택한 기능에 맞는 증거기반중재 목록에서 적용할 중재를 선택합니다<br>
+        <span style="background:var(--pri);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">3</span> BIP 작성 — 경쟁행동모델, 중재 방법, 위기 관리 등을 포함한 행동중재계획을 작성합니다<br>
+        <span style="background:var(--acc);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">4</span> 사회적상황이야기 — 작성한 BIP와 연동하여 상황이야기를 제작할 수 있습니다
+      </div>
+
+      <div style="font-weight:600;color:var(--pri);margin-bottom:4px">데이터 저장 안내</div>
+      <div style="margin-bottom:10px">모든 데이터는 이 기기의 브라우저(localStorage)에만 저장됩니다. 서버로 전송되지 않습니다. 브라우저 데이터를 삭제하면 저장된 내용이 함께 삭제되므로 중요한 BIP는 PDF로 내보내서 별도 보관해 주세요.</div>
+
+      <div style="font-weight:600;color:var(--danger);margin-bottom:4px">⚠️ 개인정보 보호 안내</div>
+      <div>이 도구에 입력하는 학생 이름, 행동 특성, 장애 관련 정보는 민감한 개인정보입니다. 기기 잠금을 설정하고, PDF 파일은 안전하게 보관해 주세요. 개인정보보호법 제23조에 따라 민감정보는 별도 동의 없이 제3자에게 제공할 수 없습니다.</div>
+
+    </div>
+  </div>
+</div>
 <div class="tabs">
   <div class="tab active" onclick="showTab(0)"><div class="num">1</div><br>기본정보 입력 및 기능선택</div>
   <div class="tab" onclick="showTab(1)"><div class="num">2</div><br>증거기반실제(EBP)추천</div>
@@ -252,7 +280,8 @@ canvas{width:100%!important;max-height:400px}
       <div class="fg"><label>학년/학급</label><input type="text" id="fn-class" placeholder="예: 3학년 1반"></div>
       <div class="fg"><label>작성자</label><input type="text" id="fn-author" placeholder="작성자 이름"></div>
     </div>
-    <div class="fg"><label>팀 구성원</label><input type="text" id="fn-team" placeholder="예: 통합교사, 특수교사, 관리자, 보호자"></div>
+    <div class="fg"><label>학생 특성 및 강점</label><textarea id="fn-strengths" placeholder="예: 시각적 정보 처리에 강점, 공룡에 높은 관심, 1:1 상황에서 지시 따르기 가능"></textarea></div>
+<div class="fg"><label>지원 필요 영역</label><textarea id="fn-needs" placeholder="예: 언어적 지시 이해 어려움, 활동 전환 시 불안, 또래 상호작용 제한"></textarea></div>
   </div>
 </div>
 
@@ -359,7 +388,8 @@ canvas{width:100%!important;max-height:400px}
         <div class="fg"><label>학년/학급</label><input type="text" id="bip-class" placeholder="예: 3학년 해바라기반"></div>
         <div class="fg"><label>작성자</label><input type="text" id="bip-author"></div>
       </div>
-      <div class="fg"><label>팀 구성원</label><input type="text" id="bip-team" placeholder="예: 담임, 특수교사, 보조원, 보호자"></div>
+      <div class="fg"><label>학생 특성 및 강점</label><textarea id="bip-strengths"></textarea></div>
+<div class="fg"><label>지원 필요 영역</label><textarea id="bip-needs"></textarea></div>
     </div>
   </div>
 
@@ -797,7 +827,8 @@ fns.push({ student: stu, behavior: beh, functions: selected, date: new Date().to
     'fn-date': 'bip-date',
     'fn-class': 'bip-class',
     'fn-author': 'bip-author',
-    'fn-team': 'bip-team',
+    'fn-strengths': 'bip-strengths',
+'fn-needs': 'bip-needs',
     'fn-target': 'bip-target',
     'fn-baseline': 'bip-baseline',
     'fn-antecedent': 'bip-antecedent',
@@ -906,7 +937,7 @@ const EBP_DB = {
       { name: '탈출 소거', desc: '회피 행동 발생해도 과제를 제거하지 않음. 적절한 요청 시에만 휴식 제공', ncaep: true },
       { name: '토큰 시스템', desc: '과제 참여/완수에 토큰 → 누적 시 선호 활동 교환', ncaep: true },
       { name: 'CICO', desc: '매일 과제 참여 목표 설정 → 체크인/체크아웃으로 진전도 피드백', ncaep: false },
-      { name: '프리맥 원리', desc: '비선호 과제 완수 → 선호 활동 접근. "먼저 수학 3문제 → 태블릿 5분"', ncaep: false },
+      { name: '프리맥 원리', desc: '비선호 과제 완수 → 선호 활동 접근. "먼저 수학 3문제 → 말랑이 5분"', ncaep: false },
       { name: '행동 계약', desc: '학생과 교사가 목표 행동과 강화를 서면 합의', ncaep: false },
     ]
   },
@@ -920,7 +951,7 @@ const EBP_DB = {
       { name: '시각적 감각 메뉴', desc: '이용 가능한 감각 도구/활동 시각적 목록 제시. 선택적 접근 구조화', ncaep: false },
     ],
     '대체행동 교수': [
-      { name: 'FCT (기능적 의사소통 훈련)', desc: '"감각 도구 주세요", "쉬고 싶어요" 등 감각 욕구 의사소통 교수', ncaep: true },
+      { name: 'FCT (기능적 의사소통 훈련)', desc: '"말랑이 주세요", "쉬고 싶어요" 등 감각 욕구 의사소통 교수', ncaep: true },
       { name: '자기점검/자기관리', desc: '감각 상태를 인식하고 적절한 감각 전략을 선택하는 기술 교수', ncaep: true },
       { name: '대체 감각 반응 교수', desc: '손 흔들기 대신 스트레스볼, 책상 두드리기 대신 fidget tool 등 대체 행동 교수', ncaep: false },
       { name: 'Zones of Regulation', desc: '감정/각성 수준을 색상으로 분류하고 각 zone에 맞는 조절 전략 교수', ncaep: false },
@@ -939,7 +970,7 @@ const EBP_DB = {
       { name: 'First-Then 보드', desc: '"먼저~하면 그다음~할 수 있어" 시각적 제시. 원하는 물건/활동의 획득 조건 명확화', ncaep: true },
       { name: '선택권 제공', desc: '사용 가능한 물건/활동 중 선택 기회 제공으로 통제감 증가', ncaep: false },
       { name: 'NCR (비유관 강화)', desc: '선호 물건/활동에 일정 간격 무조건 접근 기회 제공. 결핍 상태 해소', ncaep: true },
-      { name: '거절 사전 예고', desc: '"오늘은 ○○를 쓸 수 없어요" 사전 안내 + 대안 제시', ncaep: false },
+      { name: '거절 사전 예고', desc: '"오늘은 ○○를 쓸 수 없어" 사전 안내 + 대안 제시', ncaep: false },
       { name: '시각적 스케줄', desc: '언제 원하는 물건/활동에 접근할 수 있는지 시각적으로 예측 가능하게', ncaep: true },
       { name: '풍부한 환경 제공', desc: '선호 자극이 비수반적으로 제공되는 환경 조성으로 결핍 감소', ncaep: false },
     ],
@@ -950,7 +981,7 @@ const EBP_DB = {
       { name: '거절 수용 교수', desc: '"안 돼요"를 들었을 때 적절한 대처 행동(대안 선택, 기다리기) 교수', ncaep: false },
       { name: '비디오 모델링', desc: '적절한 요청 및 기다리기 행동을 비디오로 시연', ncaep: true },
       { name: '사회적 이야기', desc: '나누기, 순서 지키기, 기다리기 상황의 사회적 기대를 이야기로 교수', ncaep: true },
-      { name: '협상/타협 기술', desc: '"대신 ○○는 어때요?" 등 유연한 대안 제시 기술 교수 (고기능 학습자)', ncaep: false },
+      { name: '협상/타협 기술', desc: '"대신 ○○는 어때?" 등 유연한 대안 제시 기술 교수 (고기능 학습자)', ncaep: false },
     ],
     '후속결과 중재': [
       { name: 'DRA', desc: '적절한 요청 행동에 원하는 물건/활동 제공, 부적절한 획득 행동에는 차단', ncaep: true },
@@ -1307,7 +1338,7 @@ function exportBIPPdf() {
   const sections = {};
 
   // 1. 기본 정보
-  const sec1 = row('학생', 'bip-stu') + row('학급', 'bip-class') + row('작성자', 'bip-author') + row('작성일', 'bip-date') + row('팀 구성원', 'bip-team');
+  const sec1 = row('학생', 'bip-stu') + row('학급', 'bip-class') + row('작성자', 'bip-author') + row('작성일', 'bip-date') + contentRow('학생 특성 및 강점', 'bip-strengths') + contentRow('지원 필요 영역', 'bip-needs');
   sections.basic = sec1 ? `<div class="section"><div class="section-title">1. 기본 정보</div>${sec1}</div>` : '';
 
   // 2. 목표 행동

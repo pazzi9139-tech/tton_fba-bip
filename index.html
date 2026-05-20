@@ -275,7 +275,7 @@ canvas{width:100%!important;max-height:400px}
   </div>
 </div>
 
-<!-- 5. 강화제 정보 -->
+<!-- 4. 강화제 정보 -->
 <div class="card">
   <div class="bip-section">
     <div class="bip-section-title">4. 강화제 정보</div>
@@ -374,9 +374,27 @@ canvas{width:100%!important;max-height:400px}
     </div>
   </div>
 
+    <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">4. 강화제 정보</div>
+      <div class="fg"><label>사용할 수 있는 강화제</label><textarea id="bip-reinf" placeholder="사회적: 칭찬, 하이파이브&#10;활동: 태블릿, 그리기&#10;실물: 스티커, 간식"></textarea></div>
+      <div class="fg"><label>강화 방법 및 빈도</label><input type="text" id="bip-schedule" placeholder="예: 연속강화(CRF) → 점진적으로 FR3으로 감소"></div>
+    </div>
+  </div>
+
+    <div class="card">
+    <div class="bip-section">
+      <div class="bip-section-title">5. 목표 설정</div>
+      <div class="bip-2col">
+        <div class="fg"><label>단기 목표 (2~4주)</label><textarea id="bip-goal-short" placeholder="예: 과제 거부 행동을 하루 평균 4.2회에서 2회 이하로 감소"></textarea></div>
+        <div class="fg"><label>장기 목표 (학기)</label><textarea id="bip-goal-long" placeholder="예: 어려운 과제 상황에서 도움 요청 카드를 독립적으로 사용"></textarea></div>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="bip-section" style="border-left-color:#8e44ad">
-      <div class="bip-section-title" style="color:#8e44ad">3.5 경쟁행동모델 (Competing Behavior Model)</div>
+      <div class="bip-section-title" style="color:#8e44ad">6. 경쟁행동모델 (Competing Behavior Model)</div>
       <div class="card-d">O'Neill et al.(1997). 문제행동 경로와 경쟁하는 바람직한 행동/대안행동 경로를 설정하고, 각 경로에 대한 중재 전략을 매핑합니다.</div>
 
       <div style="background:#f5f0fa;border:1px solid #d5c8e6;border-radius:10px;padding:16px;margin-bottom:12px">
@@ -459,24 +477,6 @@ canvas{width:100%!important;max-height:400px}
 
   <div class="card">
     <div class="bip-section">
-      <div class="bip-section-title">4. 강화제 정보</div>
-      <div class="fg"><label>선호 강화제</label><textarea id="bip-reinf" placeholder="사회적: 칭찬, 하이파이브&#10;활동: 태블릿, 그리기&#10;실물: 스티커, 간식"></textarea></div>
-      <div class="fg"><label>강화 스케줄</label><input type="text" id="bip-schedule" placeholder="예: 연속강화(CRF) → 점진적으로 FR3으로 감소"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="bip-section">
-      <div class="bip-section-title">6. 목표 설정</div>
-      <div class="bip-2col">
-        <div class="fg"><label>단기 목표 (2~4주)</label><textarea id="bip-goal-short" placeholder="예: 과제 거부 행동을 하루 평균 4.2회에서 2회 이하로 감소"></textarea></div>
-        <div class="fg"><label>장기 목표 (학기)</label><textarea id="bip-goal-long" placeholder="예: 어려운 과제 상황에서 도움 요청 카드를 독립적으로 사용"></textarea></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="bip-section">
       <div class="bip-section-title">7. 중재 방법</div>
       <div class="card" style="background:var(--blue-l);border-color:var(--blue)">
         <div style="font-weight:600;color:var(--blue);margin-bottom:8px">선행사건 중재 (예방)</div>
@@ -544,14 +544,14 @@ canvas{width:100%!important;max-height:400px}
     <div style="font-weight:600;color:var(--acc);margin-bottom:8px">📄 내보낼 섹션 선택</div>
     <div style="font-size:13px;line-height:2">
       <label><input type="checkbox" value="basic" checked> 1. 기본 정보</label><br>
-      <label><input type="checkbox" value="target" checked> 2. 목표 행동 조작적 정의</label><br>
-      <label><input type="checkbox" value="fba" checked> 3. FBA 결과 요약</label><br>
-      <label><input type="checkbox" value="cbm" checked> 3.5 경쟁행동모델</label><br>
-      <label><input type="checkbox" value="reinf" checked> 4. 강화제 정보</label><br>
-      <label><input type="checkbox" value="goal" checked> 5. 목표 설정</label><br>
-      <label><input type="checkbox" value="intervention" checked> 6. 중재 방법</label><br>
-      <label><input type="checkbox" value="crisis" checked> 7. 위기 관리 계획</label><br>
-      <label><input type="checkbox" value="data" checked> 8. 데이터 수집 및 검토 계획</label>
+<label><input type="checkbox" value="target" checked> 2. 목표 행동 조작적 정의</label><br>
+<label><input type="checkbox" value="fba" checked> 3. FBA 결과 요약</label><br>
+<label><input type="checkbox" value="reinf" checked> 4. 강화제 정보</label><br>
+<label><input type="checkbox" value="goal" checked> 5. 목표 설정</label><br>
+<label><input type="checkbox" value="cbm" checked> 6. 경쟁행동모델</label><br>
+<label><input type="checkbox" value="intervention" checked> 7. 중재 방법</label><br>
+<label><input type="checkbox" value="crisis" checked> 8. 위기 관리 계획</label><br>
+<label><input type="checkbox" value="data" checked> 9. 데이터 수집 및 검토 계획</label>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
       <button class="btn btn-acc btn-sm" onclick="exportBIPPdf()">내보내기</button>
@@ -1386,7 +1386,7 @@ function exportBIPPdf() {
   sections.data = sec9 ? `<div class="section"><div class="section-title">9. 데이터 수집 및 검토 계획</div>${sec9}</div>` : '';
 
   // 선택된 섹션만 조합
-  const sectionOrder = ['basic','target','fba','cbm','reinf','goal','intervention','crisis','data'];
+  const sectionOrder = ['basic','target','fba','reinf','goal','cbm','intervention','crisis','data'];
   const bodyContent = sectionOrder.filter(k => checked.has(k)).map(k => sections[k]).join('\n');
 
   const printHtml = `<!DOCTYPE html>

@@ -228,7 +228,7 @@ canvas{width:100%!important;max-height:400px}
   <h1>행동중재계획(BIP) 작성 도구</h1>
   <p>기본정보 입력 및 기능선택 → EBP추천 → BIP작성 (+사회적상황이야기 도구)</p>
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
-  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.2.4 · 2026.05.20</p>
+  <p style="margin-top:2px;font-size:10px;opacity:.7">v1.2.5 · 2026.05.20</p>
 </div>
 <!-- 사용 가이드 -->
 <div style="max-width:800px;margin:0 auto;padding:8px 16px">
@@ -299,6 +299,10 @@ canvas{width:100%!important;max-height:400px}
   <div class="bip-section">
     <div class="bip-section-title">3. FBA 결과 요약</div>
     <div class="fg"><label>선행사건 (배경/직전)</label><textarea id="fn-antecedent" placeholder="배경사건: 수면 부족, 아침 결식&#10;직전 선행사건: 어려운 과제 제시, 선호활동 중단 요구"></textarea></div>
+    <div class="fg">
+  <label>행동 (B)</label>
+  <div id="fn-behavior-mirror" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;min-height:36px;font-size:13px;color:var(--sub)">2번 '도전행동'에서 자동으로 가져옵니다</div>
+</div>
     <div class="fg"><label>후속결과 (유지 변인)</label><textarea id="fn-consequence" placeholder="과제 제거/지연, 또래 관심, 감각 자극 획득 등"></textarea></div>
     <div class="fg"><label>가설 진술</label><textarea id="fn-hypothesis" placeholder="[선행사건]이 있을 때 [학생]은 [행동]을 하며, 그 결과 [기능]을 달성할 것이다."></textarea></div>
   </div>
@@ -407,6 +411,10 @@ canvas{width:100%!important;max-height:400px}
       <div class="fg"><label>행동의 기능</label><div id="bip-functions" style="margin-top:4px"></div></div>
       <div class="bip-2col">
         <div class="fg"><label>선행사건 (배경/직전)</label><textarea id="bip-antecedent" placeholder="배경사건: 수면 부족, 아침 결식&#10;직전 선행사건: 어려운 과제 제시, 선호활동 중단 요구"></textarea></div>
+        <div class="fg">
+  <label>행동 (B)</label>
+  <div id="bip-behavior-mirror" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;min-height:36px;font-size:13px;color:var(--sub)">2번 '도전행동'에서 자동으로 가져옵니다</div>
+</div>
         <div class="fg"><label>후속결과 (유지 변인)</label><textarea id="bip-consequence" placeholder="과제 제거/지연, 또래 관심, 감각 자극 획득 등"></textarea></div>
       </div>
       <div class="fg"><label>가설 진술</label><textarea id="bip-hypothesis" placeholder="[선행사건]이 있을 때 [학생]은 [행동]을 하며, 그 결과 [기능]을 달성한다."></textarea></div>
@@ -842,7 +850,9 @@ fns.push({ student: stu, behavior: beh, functions: selected, date: new Date().to
     const dst = document.getElementById(to);
     if (src && dst) dst.value = src.value;
   });
-
+// BIP 행동(B) mirror 업데이트
+const targetVal = document.getElementById('fn-target')?.value || '';
+document.getElementById('bip-behavior-mirror').textContent = targetVal || '2번 \'도전행동\'에서 자동으로 가져옵니다';
   document.querySelectorAll('.fn-card').forEach(c => c.classList.remove('selected'));
   renderFnList();
   alert('저장 완료! BIP에 자동 입력되었습니다. ② EBP 추천 탭으로 이동합니다.');
@@ -1347,7 +1357,8 @@ function exportBIPPdf() {
 
   // 3. FBA 결과 요약
   const sec3fn = getFnBadges() !== '(미선택)' ? `<div class="row"><span class="label">행동의 기능:</span> ${getFnBadges()}</div>` : '';
-  const sec3 = sec3fn + contentRow('선행사건', 'bip-antecedent') + contentRow('후속결과', 'bip-consequence') + contentRow('가설 진술', 'bip-hypothesis');
+const sec3beh = getValue('bip-target') ? `<div class="row"><span class="label">행동 (B):</span> ${getValue('bip-target')}</div>` : '';
+const sec3 = sec3fn + contentRow('선행사건 (A)', 'bip-antecedent') + sec3beh + contentRow('후속결과 (C)', 'bip-consequence') + contentRow('가설 진술', 'bip-hypothesis');
   sections.fba = sec3 ? `<div class="section"><div class="section-title">3. FBA 결과 요약</div>${sec3}</div>` : '';
 
   // 4. 강화제 정보
@@ -1865,7 +1876,13 @@ showTab = function(i) {
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-
+// 2번 도전행동 → 3번 행동(B) 자동 반영
+document.getElementById('fn-target').addEventListener('input', function() {
+  document.getElementById('fn-behavior-mirror').textContent = this.value || '2번 \'도전행동\'에서 자동으로 가져옵니다';
+});
+document.getElementById('bip-target').addEventListener('input', function() {
+  document.getElementById('bip-behavior-mirror').textContent = this.value || '2번 \'도전행동\'에서 자동으로 가져옵니다';
+});
 
 // ═══════════════════════════════════════
 // PWA: Service Worker 등록

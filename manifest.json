@@ -24,6 +24,9 @@
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
     { "name": "상황이야기", "short_name": "이야기", "url": "./social-story.html",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+      ,
+{ "name": "CICO 진전기록", "short_name": "CICO", "url": "./cico.html",
+  "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ],
   "prefer_related_applications": false
 }

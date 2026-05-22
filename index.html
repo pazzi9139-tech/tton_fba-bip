@@ -228,7 +228,7 @@ canvas{width:100%!important;max-height:400px}
   <h1>행동중재계획(BIP) 작성 도구</h1>
   <p>기본정보 입력 및 기능선택 → EBP추천 → BIP작성 (+사회적상황이야기 도구)</p>
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
-  <p style="margin-top:2px;font-size:10px;opacity:.7">v2.0.3 · 2026.05.22</p>
+  <p style="margin-top:2px;font-size:10px;opacity:.7">v2.0.4 · 2026.05.22</p>
 </div>
 <!-- 사용 가이드 -->
 <div style="max-width:800px;margin:0 auto;padding:8px 16px">
@@ -1522,20 +1522,21 @@ const sec3 = sec3fn + contentRow('선행사건 (A)', 'bip-antecedent') + sec3beh
         </div>
       </div>
     </div>
-    ${getValue('cbm-strat-ant') ? `<div class="strat-box strat-ant"><strong>선행사건 중재:</strong> ${getValue('cbm-strat-ant')}</div>` : ''}
-    ${getValue('cbm-strat-teach') ? `<div class="strat-box strat-teach"><strong>교수 전략:</strong> ${getValue('cbm-strat-teach')}</div>` : ''}
-    ${getValue('cbm-strat-con') ? `<div class="strat-box strat-con"><strong>후속결과 전략:</strong> ${getValue('cbm-strat-con')}</div>` : ''}
   </div>` : '';
 
   // 7. 중재 방법
-  const int1 = getValue('bip-int-ant-custom');
-  const int2 = getValue('bip-int-alt-custom');
-  const int3 = getValue('bip-int-con-custom');
-  const sec7 = (int1 || int2 || int3) ? [
-    int1 ? `<div class="strat-box strat-ant"><strong>선행사건 중재 (예방):</strong><br>${int1}</div>` : '',
-    int2 ? `<div class="strat-box strat-teach"><strong>대체행동 교수:</strong><br>${int2}</div>` : '',
-    int3 ? `<div class="strat-box strat-con"><strong>후속결과 중재:</strong><br>${int3}</div>` : ''
-  ].join('') : '';
+  const int1Html = document.getElementById('bip-int-ant').innerHTML.trim();
+const int1Custom = getValue('bip-int-ant-custom');
+const int2Html = document.getElementById('bip-int-alt').innerHTML.trim();
+const int2Custom = getValue('bip-int-alt-custom');
+const int3Html = document.getElementById('bip-int-con').innerHTML.trim();
+const int3Custom = getValue('bip-int-con-custom');
+const hasInt = int1Html || int1Custom || int2Html || int2Custom || int3Html || int3Custom;
+const sec7 = hasInt ? [
+  (int1Html || int1Custom) ? `<div class="strat-box strat-ant"><strong>선행사건 중재 (예방):</strong>${int1Html ? '<div style="margin-top:4px">' + int1Html + '</div>' : ''}${int1Custom ? '<div style="margin-top:4px;white-space:pre-wrap">' + int1Custom + '</div>' : ''}</div>` : '',
+  (int2Html || int2Custom) ? `<div class="strat-box strat-teach"><strong>대체행동 교수:</strong>${int2Html ? '<div style="margin-top:4px">' + int2Html + '</div>' : ''}${int2Custom ? '<div style="margin-top:4px;white-space:pre-wrap">' + int2Custom + '</div>' : ''}</div>` : '',
+  (int3Html || int3Custom) ? `<div class="strat-box strat-con"><strong>후속결과 중재:</strong>${int3Html ? '<div style="margin-top:4px">' + int3Html + '</div>' : ''}${int3Custom ? '<div style="margin-top:4px;white-space:pre-wrap">' + int3Custom + '</div>' : ''}</div>` : ''
+].join('') : '';
   sections.intervention = sec7 ? `<div class="section"><div class="section-title">7. 중재 방법</div>${sec7}</div>` : '';
 
   // 8. 위기 관리 계획

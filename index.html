@@ -228,7 +228,7 @@ canvas{width:100%!important;max-height:400px}
   <h1>행동중재계획(BIP) 작성 도구</h1>
   <p>기본정보 입력 및 기능선택 → EBP추천 → BIP작성 (+사회적상황이야기 도구)</p>
   <p style="margin-top:4px;font-size:11px;opacity:.7">만든이: 특수교사 이노아 (연구회 뜨온)</p>
-  <p style="margin-top:2px;font-size:10px;opacity:.7">v2.0.1 · 2026.05.22</p>
+  <p style="margin-top:2px;font-size:10px;opacity:.7">v2.0.2 · 2026.05.22</p>
 </div>
 <!-- 사용 가이드 -->
 <div style="max-width:800px;margin:0 auto;padding:8px 16px">
@@ -259,11 +259,17 @@ canvas{width:100%!important;max-height:400px}
     </div>
   </div>
 </div>
+<!-- 외부 도구 바로가기 -->
+<div style="max-width:800px;margin:0 auto;padding:4px 16px">
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-out btn-block" onclick="openSocialStory()" style="font-size:12px">📖 사회적상황이야기</button>
+    <button class="btn btn-out btn-block" onclick="openCICO()" style="font-size:12px">📊 CICO 진전기록</button>
+  </div>
+</div>
 <div class="tabs">
   <div class="tab active" onclick="showTab(0)"><div class="num">1</div><br>기본정보 입력 및 기능선택</div>
   <div class="tab" onclick="showTab(1)"><div class="num">2</div><br>증거기반실제(EBP)추천</div>
   <div class="tab" onclick="showTab(2)"><div class="num">3</div><br>행동중재계획(BIP)작성</div>
-  <div class="tab tab-ss" onclick="goToSocialStory()"><div class="num">4</div><br>사회적상황이야기</div>
 </div>
 
 <!-- ══════ TAB 2: 기능 선택 ══════ -->
@@ -1910,6 +1916,13 @@ function goToSocialStory() {
   const params = new URLSearchParams();
   if (student) params.set('student', student);
   window.location.href = 'social-story.html' + (params.toString() ? '?' + params.toString() : '');
+}
+function openCICO() {
+  const student = document.getElementById('bip-stu')?.value?.trim() || 
+                  document.getElementById('fn-stu2')?.value?.trim() || '';
+  const params = new URLSearchParams();
+  if (student) params.set('student', student);
+  window.location.href = 'cico.html' + (params.toString() ? '?' + params.toString() : '');
 }
 function openSocialStory() {
   // BIP에서 선택된 기능가설 정보 수집

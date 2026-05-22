@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CICO 점수 기록</title>
+<meta name="theme-color" content="#3a5334">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f5f0;--card:#fff;--border:#e0ddd5;--text:#2c2c2c;--sub:#777;
+  --pri:#4a6741;--pri-l:#e8efe6;--pri-d:#3a5334;
+  --acc:#c96b3c;--acc-l:#fdf0e8;
+  --danger:#c0392b;--danger-l:#fdecea;
+  --blue:#2e6b8a;--blue-l:#e4f0f6;
+  --radius:10px;--shadow:0 2px 8px rgba(0,0,0,.06);
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;padding-bottom:40px}
+.header{background:var(--pri-d);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:18px;font-weight:600}
+.header p{font-size:12px;opacity:.8;margin-top:2px}
+.back-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit}
+.back-btn:hover{background:rgba(255,255,255,.25)}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-t{font-size:16px;font-weight:600;margin-bottom:4px}
+.card-d{font-size:12px;color:var(--sub);margin-bottom:12px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:12px;font-weight:500;margin-bottom:4px;color:var(--sub)}
+input[type="text"],input[type="number"],input[type="date"],select,textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--bg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:.2s}
+.btn-pri{background:var(--pri);color:#fff}.btn-pri:hover{background:var(--pri-d)}
+.btn-acc{background:var(--acc);color:#fff}
+.btn-out{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-out:hover{background:var(--pri-l)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-block{width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:120px}
+
+/* 점수 입력 그리드 */
+.score-grid{display:grid;gap:8px;margin:12px 0}
+.score-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px}
+.score-row .period-label{font-size:13px;font-weight:500;min-width:80px}
+.score-row .score-btns{display:flex;gap:4px}
+.score-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--card);font-size:14px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
+.score-btn:hover{border-color:var(--pri)}
+.score-btn.selected-0{background:var(--danger-l);border-color:var(--danger);color:var(--danger)}
+.score-btn.selected-1{background:#fef9e7;border-color:#f1c40f;color:#b7950b}
+.score-btn.selected-2{background:#d5f5e3;border-color:#27ae60;color:#1e8449}
+
+/* 그래프 */
+.graph-area{position:relative;width:100%;height:300px;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.graph-canvas{width:100%;height:100%}
+
+/* 기록 목록 */
+.record-item{padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.record-item:hover{background:var(--pri-l)}
+.record-score{font-weight:700;font-size:16px}
+.record-score.above{color:#27ae60}
+.record-score.below{color:var(--danger)}
+.record-del{color:var(--danger);cursor:pointer;font-size:16px;padding:4px 8px}
+
+/* 통계 */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:12px 0}
+.stat-card{background:var(--bg);padding:10px;border-radius:8px;text-align:center}
+.stat-val{font-size:20px;font-weight:700;color:var(--pri)}
+.stat-label{font-size:11px;color:var(--sub)}
+
+/* 목표선 표시 */
+.goal-indicator{display:inline-block;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600}
+.goal-met{background:#d5f5e3;color:#1e8449}
+.goal-not{background:var(--danger-l);color:var(--danger)}
+
+/* 빈 상태 */
+.empty-msg{text-align:center;padding:30px;color:var(--sub);font-size:13px}
+
+/* 시간대 선택 버튼 */
+.period-btn{padding:8px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--sub);transition:.2s;font-family:inherit}
+.period-btn:hover{border-color:var(--pri)}
+.period-btn.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+
+@media (min-width: 768px) {
+  body{font-size:15px}
+  .header{padding:20px 32px}
+  .header h1{font-size:22px}
+  .container{padding:24px 32px;max-width:960px}
+  .card{padding:20px 24px;margin-bottom:16px}
+  input[type="text"],input[type="number"],input[type="date"],select{padding:12px 14px;font-size:15px}
+  .btn{padding:12px 22px;font-size:14px}
+  .score-btn{width:44px;height:44px;font-size:16px}
+  .graph-area{height:400px}
+  .stat-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📊 CICO 점수 기록</h1>
+    <p>일일진전카드 점수 기록 및 추이 분석</p>
+  </div>
+  <button class="back-btn" onclick="goBack()">← BIP 도구로</button>
+</div>
+
+<div class="container">
+
+  <!-- 학생 선택/설정 -->
+  <div class="card">
+    <div class="card-t">학생 및 평정 설정</div>
+    <div class="card-d">CICO 카드의 시간대와 점수 체계를 설정합니다.</div>
+    <div class="row">
+      <div class="fg">
+        <label>학생 이름</label>
+        <input type="text" id="cico-student" placeholder="학생 이름">
+      </div>
+      <div class="fg">
+        <label>목표 달성률 (%)</label>
+        <input type="number" id="cico-goal" value="80" min="0" max="100" placeholder="80">
+      </div>
+    </div>
+    <div class="fg">
+      <label>평정 시간대 (선택)</label>
+      <div id="period-buttons" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+        <button type="button" class="period-btn active" data-period="1교시">1교시</button>
+        <button type="button" class="period-btn active" data-period="2교시">2교시</button>
+        <button type="button" class="period-btn active" data-period="3교시">3교시</button>
+        <button type="button" class="period-btn active" data-period="4교시">4교시</button>
+        <button type="button" class="period-btn active" data-period="5교시">5교시</button>
+        <button type="button" class="period-btn active" data-period="점심">점심</button>
+        <button type="button" class="period-btn active" data-period="6교시">6교시</button>
+      </div>
+      <div style="margin-top:6px;display:flex;gap:6px;align-items:center">
+        <input type="text" id="custom-period" placeholder="직접 입력" style="flex:1;padding:6px 10px;font-size:12px">
+        <button class="btn btn-out btn-sm" onclick="addCustomPeriod()">+ 추가</button>
+      </div>
+    </div>
+    <div class="fg">
+      <label>점수 체계</label>
+      <select id="cico-scale">
+        <option value="3">0-1-2 (3점 척도)</option>
+        <option value="4">0-1-2-3 (4점 척도)</option>
+        <option value="5">0-1-2-3-4 (5점 척도)</option>
+      </select>
+    </div>
+    <button class="btn btn-pri" onclick="applySettings()">설정 적용</button>
+  </div>
+
+  <!-- 오늘 점수 입력 -->
+  <div class="card">
+    <div class="card-t">점수 입력</div>
+    <div class="card-d">각 시간대별로 점수를 터치하세요.</div>
+    <div class="fg">
+      <label>날짜</label>
+      <input type="date" id="cico-date">
+    </div>
+    <div id="score-input-area" class="score-grid">
+      <!-- 동적 생성 -->
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <div style="flex:1;text-align:center;padding:10px;background:var(--pri-l);border-radius:8px">
+        <div style="font-size:11px;color:var(--sub)">오늘 총점</div>
+        <div id="today-total" style="font-size:24px;font-weight:700;color:var(--pri)">0</div>
+        <div id="today-max" style="font-size:11px;color:var(--sub)">/ 0</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:10px;background:var(--pri-l);border-radius:8px">
+        <div style="font-size:11px;color:var(--sub)">달성률</div>
+        <div id="today-pct" style="font-size:24px;font-weight:700;color:var(--pri)">0%</div>
+        <div id="today-goal-status"></div>
+      </div>
+    </div>
+    <button class="btn btn-pri btn-block" style="margin-top:12px" onclick="saveScore()">💾 점수 저장</button>
+  </div>
+
+  <!-- 추이 그래프 -->
+  <div class="card">
+    <div class="card-t">추이 그래프</div>
+    <div class="card-d">일별 달성률 추이와 목표선을 확인합니다.</div>
+    <canvas id="cico-chart" class="graph-canvas"></canvas>
+    <div id="cico-stats" class="stat-grid" style="display:none">
+      <div class="stat-card">
+        <div id="stat-avg" class="stat-val">-</div>
+        <div class="stat-label">평균 달성률</div>
+      </div>
+      <div class="stat-card">
+        <div id="stat-days" class="stat-val">-</div>
+        <div class="stat-label">기록 일수</div>
+      </div>
+      <div class="stat-card">
+        <div id="stat-met" class="stat-val">-</div>
+        <div class="stat-label">목표 달성 일수</div>
+      </div>
+      <div class="stat-card">
+        <div id="stat-trend" class="stat-val">-</div>
+        <div class="stat-label">추세</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기록 목록 -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="card-t">기록 목록</div>
+      <button class="btn btn-out btn-sm" onclick="exportPDF()">📄 PDF 내보내기</button>
+    </div>
+    <div id="record-list"></div>
+  </div>
+
+</div>
+
+<div style="text-align:center;padding:24px 16px;font-size:11px;color:#999;line-height:1.7;border-top:1px solid var(--border);margin-top:20px">
+© 2026 <span style="color:var(--pri)">특수교사 이노아 · 연구회 뜨온</span><br>
+All rights reserved. 무단 복제 · 재배포 금지
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// 데이터 관리
+// ═══════════════════════════════════════
+function getCICOData() {
+  return JSON.parse(localStorage.getItem('cicoData') || '{}');
+}
+function saveCICOData(data) {
+  localStorage.setItem('cicoData', JSON.stringify(data));
+}
+function getStudentKey() {
+  return document.getElementById('cico-student').value.trim();
+}
+function getStudentData() {
+  const data = getCICOData();
+  const key = getStudentKey();
+  if (!key) return null;
+  if (!data[key]) data[key] = { settings: {}, records: [] };
+  return data[key];
+}
+
+// ═══════════════════════════════════════
+// 설정
+// ═══════════════════════════════════════
+let currentPeriods = [];
+let currentScale = 3;
+let currentScores = {};
+
+function getSelectedPeriods() {
+  return [...document.querySelectorAll('.period-btn.active')].map(b => b.dataset.period);
+}
+
+function togglePeriod(btn) {
+  btn.classList.toggle('active');
+}
+
+function addCustomPeriod() {
+  const input = document.getElementById('custom-period');
+  const name = input.value.trim();
+  if (!name) return;
+  
+  // 중복 체크
+  const exists = document.querySelector(`.period-btn[data-period="${name}"]`);
+  if (exists) { alert('이미 있는 시간대입니다.'); return; }
+  
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'period-btn active';
+  btn.dataset.period = name;
+  btn.textContent = name;
+  btn.onclick = function() { togglePeriod(this); };
+  document.getElementById('period-buttons').appendChild(btn);
+  input.value = '';
+}
+
+// period 버튼 클릭 이벤트
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', function() { togglePeriod(this); });
+});
+
+function applySettings() {
+  const student = getStudentKey();
+  if (!student) return alert('학생 이름을 입력하세요.');
+
+  currentPeriods = getSelectedPeriods();
+  if (!currentPeriods.length) return alert('시간대를 하나 이상 선택하세요.');
+  currentScale = parseInt(document.getElementById('cico-scale').value);
+  const goal = parseInt(document.getElementById('cico-goal').value) || 80;
+
+  // 설정 저장
+  const data = getCICOData();
+  if (!data[student]) data[student] = { settings: {}, records: [] };
+  data[student].settings = {
+    periods: currentPeriods,
+    scale: currentScale,
+    goal: goal
+  };
+  saveCICOData(data);
+
+  currentScores = {};
+  renderScoreInput();
+  renderRecords();
+  renderGraph();
+  alert('설정이 적용되었습니다.');
+}
+
+function loadStudentSettings(student) {
+  const data = getCICOData();
+  if (data[student] && data[student].settings) {
+    const s = data[student].settings;
+    if (s.periods) {
+      // 모든 버튼 비활성화
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      s.periods.forEach(p => {
+        const btn = document.querySelector(`.period-btn[data-period="${p}"]`);
+        if (btn) {
+          btn.classList.add('active');
+        } else {
+          // 커스텀 시간대 버튼 추가
+          const newBtn = document.createElement('button');
+          newBtn.type = 'button';
+          newBtn.className = 'period-btn active';
+          newBtn.dataset.period = p;
+          newBtn.textContent = p;
+          newBtn.onclick = function() { togglePeriod(this); };
+          document.getElementById('period-buttons').appendChild(newBtn);
+        }
+      });
+      currentPeriods = s.periods;
+    }
+    if (s.scale) {
+      currentScale = s.scale;
+      document.getElementById('cico-scale').value = s.scale;
+    }
+    if (s.goal) {
+      document.getElementById('cico-goal').value = s.goal;
+    }
+  }
+}
+
+// ═══════════════════════════════════════
+// 점수 입력 UI
+// ═══════════════════════════════════════
+function renderScoreInput() {
+  const area = document.getElementById('score-input-area');
+  if (!currentPeriods.length) {
+    area.innerHTML = '<div class="empty-msg">설정을 먼저 적용해주세요.</div>';
+    return;
+  }
+
+  area.innerHTML = currentPeriods.map((period, pi) => {
+    let btns = '';
+    for (let s = 0; s < currentScale; s++) {
+      btns += `<button class="score-btn" data-period="${pi}" data-score="${s}" onclick="selectScore(${pi},${s})">${s}</button>`;
+    }
+    return `<div class="score-row">
+      <span class="period-label">${period}</span>
+      <div class="score-btns">${btns}</div>
+    </div>`;
+  }).join('');
+
+  updateTodayTotal();
+}
+
+function selectScore(periodIdx, score) {
+  currentScores[periodIdx] = score;
+
+  // UI 업데이트
+  document.querySelectorAll(`[data-period="${periodIdx}"]`).forEach(btn => {
+    btn.className = 'score-btn';
+  });
+  const selected = document.querySelector(`[data-period="${periodIdx}"][data-score="${score}"]`);
+  if (selected) selected.classList.add(`selected-${Math.min(score, 2)}`);
+
+  updateTodayTotal();
+}
+
+function updateTodayTotal() {
+  const total = Object.values(currentScores).reduce((sum, v) => sum + v, 0);
+  const max = currentPeriods.length * (currentScale - 1);
+  const pct = max > 0 ? Math.round(total / max * 100) : 0;
+  const goal = parseInt(document.getElementById('cico-goal').value) || 80;
+
+  document.getElementById('today-total').textContent = total;
+  document.getElementById('today-max').textContent = `/ ${max}`;
+  document.getElementById('today-pct').textContent = pct + '%';
+
+  const status = document.getElementById('today-goal-status');
+  if (Object.keys(currentScores).length === 0) {
+    status.innerHTML = '';
+  } else if (pct >= goal) {
+    status.innerHTML = '<span class="goal-indicator goal-met">🎉 목표 달성!</span>';
+  } else {
+    status.innerHTML = '<span class="goal-indicator goal-not">목표 미달</span>';
+  }
+}
+
+// ═══════════════════════════════════════
+// 점수 저장
+// ═══════════════════════════════════════
+function saveScore() {
+  const student = getStudentKey();
+  if (!student) return alert('학생 이름을 입력하세요.');
+  if (Object.keys(currentScores).length === 0) return alert('점수를 입력해주세요.');
+
+  const date = document.getElementById('cico-date').value;
+  if (!date) return alert('날짜를 선택해주세요.');
+
+  const total = Object.values(currentScores).reduce((sum, v) => sum + v, 0);
+  const max = currentPeriods.length * (currentScale - 1);
+  const pct = max > 0 ? Math.round(total / max * 100) : 0;
+
+  const record = {
+    date: date,
+    scores: { ...currentScores },
+    periods: [...currentPeriods],
+    total: total,
+    max: max,
+    pct: pct,
+    id: Date.now()
+  };
+
+  const data = getCICOData();
+  if (!data[student]) data[student] = { settings: {}, records: [] };
+
+  // 같은 날짜 중복 체크
+  const existIdx = data[student].records.findIndex(r => r.date === date);
+  if (existIdx >= 0) {
+    if (!confirm(`${date}에 이미 기록이 있습니다. 덮어쓸까요?`)) return;
+    data[student].records[existIdx] = record;
+  } else {
+    data[student].records.push(record);
+  }
+
+  data[student].records.sort((a, b) => a.date.localeCompare(b.date));
+  saveCICOData(data);
+
+  // 초기화
+  currentScores = {};
+  renderScoreInput();
+  renderRecords();
+  renderGraph();
+  alert('저장되었습니다.');
+}
+
+// ═══════════════════════════════════════
+// 기록 목록
+// ═══════════════════════════════════════
+function renderRecords() {
+  const student = getStudentKey();
+  const box = document.getElementById('record-list');
+  if (!student) { box.innerHTML = '<div class="empty-msg">학생 이름을 입력하세요.</div>'; return; }
+
+  const data = getCICOData();
+  const records = data[student]?.records || [];
+
+  if (!records.length) {
+    box.innerHTML = '<div class="empty-msg">아직 기록이 없습니다.</div>';
+    return;
+  }
+
+  const goal = parseInt(document.getElementById('cico-goal').value) || 80;
+  box.innerHTML = records.slice().reverse().map(r => {
+    const cls = r.pct >= goal ? 'above' : 'below';
+    return `<div class="record-item">
+      <div>
+        <strong>${r.date}</strong>
+        <span style="font-size:12px;color:var(--sub);margin-left:8px">${r.total}/${r.max}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="record-score ${cls}">${r.pct}%</span>
+        <span class="record-del" onclick="deleteRecord('${student}',${r.id})">×</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteRecord(student, id) {
+  if (!confirm('이 기록을 삭제할까요?')) return;
+  const data = getCICOData();
+  if (data[student]) {
+    data[student].records = data[student].records.filter(r => r.id !== id);
+    saveCICOData(data);
+    renderRecords();
+    renderGraph();
+  }
+}
+
+// ═══════════════════════════════════════
+// 그래프 (Canvas)
+// ═══════════════════════════════════════
+function renderGraph() {
+  const student = getStudentKey();
+  const canvas = document.getElementById('cico-chart');
+  const ctx = canvas.getContext('2d');
+  const data = getCICOData();
+  const records = data[student]?.records || [];
+  const goal = parseInt(document.getElementById('cico-goal').value) || 80;
+
+  // Canvas 크기 설정
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height || 300;
+  const W = canvas.width;
+  const H = canvas.height;
+  const pad = { top: 30, right: 20, bottom: 50, left: 45 };
+  const gW = W - pad.left - pad.right;
+  const gH = H - pad.top - pad.bottom;
+
+  // 배경
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, W, H);
+
+  if (records.length === 0) {
+    ctx.fillStyle = '#999';
+    ctx.font = '13px "Noto Sans KR"';
+    ctx.textAlign = 'center';
+    ctx.fillText('데이터가 없습니다. 점수를 기록해주세요.', W / 2, H / 2);
+    document.getElementById('cico-stats').style.display = 'none';
+    return;
+  }
+
+  // 그리드
+  ctx.strokeStyle = '#eee';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.top + gH - (gH * i / 5);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+
+    ctx.fillStyle = '#999';
+    ctx.font = '11px "Noto Sans KR"';
+    ctx.textAlign = 'right';
+    ctx.fillText((i * 20) + '%', pad.left - 6, y + 4);
+  }
+
+  // 목표선
+  const goalY = pad.top + gH - (gH * goal / 100);
+  ctx.strokeStyle = '#e74c3c';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(pad.left, goalY);
+  ctx.lineTo(W - pad.right, goalY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = '#e74c3c';
+  ctx.font = '11px "Noto Sans KR"';
+  ctx.textAlign = 'left';
+  ctx.fillText(`목표 ${goal}%`, W - pad.right - 60, goalY - 6);
+
+  // 데이터 점 + 선
+  const xStep = records.length > 1 ? gW / (records.length - 1) : gW / 2;
+
+  // 선
+  ctx.strokeStyle = '#4a6741';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  records.forEach((r, i) => {
+    const x = records.length > 1 ? pad.left + xStep * i : pad.left + gW / 2;
+    const y = pad.top + gH - (gH * r.pct / 100);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 점
+  records.forEach((r, i) => {
+    const x = records.length > 1 ? pad.left + xStep * i : pad.left + gW / 2;
+    const y = pad.top + gH - (gH * r.pct / 100);
+
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = r.pct >= goal ? '#27ae60' : '#e74c3c';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 날짜 라벨
+    ctx.save();
+    ctx.translate(x, H - pad.bottom + 12);
+    ctx.rotate(-Math.PI / 4);
+    ctx.fillStyle = '#777';
+    ctx.font = '10px "Noto Sans KR"';
+    ctx.textAlign = 'right';
+    const dateLabel = r.date.substring(5); // MM-DD
+    ctx.fillText(dateLabel, 0, 0);
+    ctx.restore();
+
+    // 점수 라벨
+    ctx.fillStyle = '#333';
+    ctx.font = '11px "Noto Sans KR"';
+    ctx.textAlign = 'center';
+    ctx.fillText(r.pct + '%', x, y - 10);
+  });
+
+  // 통계
+  const avgPct = Math.round(records.reduce((s, r) => s + r.pct, 0) / records.length);
+  const metDays = records.filter(r => r.pct >= goal).length;
+  let trend = '-';
+  if (records.length >= 3) {
+    const recent = records.slice(-3);
+    const first = recent[0].pct;
+    const last = recent[recent.length - 1].pct;
+    trend = last > first ? '📈 상승' : last < first ? '📉 하락' : '➡️ 유지';
+  }
+
+  document.getElementById('cico-stats').style.display = 'grid';
+  document.getElementById('stat-avg').textContent = avgPct + '%';
+  document.getElementById('stat-days').textContent = records.length + '일';
+  document.getElementById('stat-met').textContent = metDays + '일';
+  document.getElementById('stat-trend').textContent = trend;
+}
+
+// ═══════════════════════════════════════
+// PDF 내보내기
+// ═══════════════════════════════════════
+function exportPDF() {
+  const student = getStudentKey();
+  if (!student) return alert('학생 이름을 입력하세요.');
+  const data = getCICOData();
+  const records = data[student]?.records || [];
+  if (!records.length) return alert('내보낼 기록이 없습니다.');
+
+  const goal = parseInt(document.getElementById('cico-goal').value) || 80;
+  const avgPct = Math.round(records.reduce((s, r) => s + r.pct, 0) / records.length);
+  const metDays = records.filter(r => r.pct >= goal).length;
+
+  // 그래프 이미지
+  const canvas = document.getElementById('cico-chart');
+  const graphImg = canvas.toDataURL('image/png');
+
+  // 기록 테이블
+  const tableRows = records.map(r => {
+    const color = r.pct >= goal ? '#1e8449' : '#c0392b';
+    return `<tr>
+      <td style="padding:6px 10px;border-bottom:1px solid #eee">${r.date}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center">${r.total} / ${r.max}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center;color:${color};font-weight:600">${r.pct}%</td>
+    </tr>`;
+  }).join('');
+
+  const printHtml = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>CICO_${student}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Noto Sans KR',sans-serif;padding:20px;font-size:12px;color:#222;line-height:1.8}
+  h1{font-size:18px;text-align:center;margin-bottom:4px}
+  .subtitle{text-align:center;font-size:11px;color:#777;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #4a6741}
+  .section{margin-bottom:16px}
+  .section-title{font-size:13px;font-weight:700;color:#4a6741;border-left:4px solid #4a6741;padding-left:8px;margin-bottom:8px}
+  .stat-grid{display:flex;gap:12px;margin:8px 0}
+  .stat-box{flex:1;text-align:center;padding:10px;background:#f5f5f0;border-radius:8px}
+  .stat-val{font-size:18px;font-weight:700;color:#4a6741}
+  .stat-label{font-size:10px;color:#777}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{background:#4a6741;color:#fff;padding:8px 10px;text-align:center;font-size:11px}
+  .graph-img{width:100%;max-height:300px;margin:8px 0}
+  .footer{margin-top:20px;padding-top:10px;border-top:1px solid #ddd;font-size:10px;color:#999;text-align:center}
+  @media print{body{padding:10px}@page{margin:15mm}}
+</style>
+</head>
+<body>
+  <h1>CICO 점수 기록</h1>
+  <div class="subtitle">${student} | 목표: ${goal}% | 기간: ${records[0].date} ~ ${records[records.length-1].date}</div>
+
+  <div class="section">
+    <div class="section-title">통계 요약</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-val">${avgPct}%</div><div class="stat-label">평균 달성률</div></div>
+      <div class="stat-box"><div class="stat-val">${records.length}일</div><div class="stat-label">기록 일수</div></div>
+      <div class="stat-box"><div class="stat-val">${metDays}일</div><div class="stat-label">목표 달성</div></div>
+      <div class="stat-box"><div class="stat-val">${Math.round(metDays/records.length*100)}%</div><div class="stat-label">목표 달성률</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">추이 그래프</div>
+    <img src="${graphImg}" class="graph-img">
+  </div>
+
+  <div class="section">
+    <div class="section-title">일별 기록</div>
+    <table>
+      <tr><th>날짜</th><th>점수</th><th>달성률</th></tr>
+      ${tableRows}
+    </table>
+  </div>
+
+  <div class="footer">본 문서는 CICO 점수 기록 도구(뜨온)에서 생성되었습니다.</div>
+  <script>window.onload=function(){window.print();}<\/script>
+</body>
+</html>`;
+
+  const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    const blob = new Blob([printHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank');
+    if (!w) location.href = url;
+  } else {
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'fixed';
+    printFrame.style.top = '-9999px';
+    printFrame.style.left = '-9999px';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    document.body.appendChild(printFrame);
+    printFrame.contentDocument.write(printHtml);
+    printFrame.contentDocument.close();
+    printFrame.contentWindow.onafterprint = function() {
+      document.body.removeChild(printFrame);
+    };
+    setTimeout(function() {
+      printFrame.contentWindow.print();
+    }, 500);
+  }
+}
+
+// ═══════════════════════════════════════
+// 네비게이션
+// ═══════════════════════════════════════
+function goBack() {
+  if (document.referrer && document.referrer.includes('index.html')) {
+    history.back();
+  } else {
+    location.href = 'index.html';
+  }
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.getElementById('cico-date').value = new Date().toISOString().split('T')[0];
+
+// URL 파라미터에서 학생 이름 받기
+const params = new URLSearchParams(location.search);
+const stuParam = params.get('student');
+if (stuParam) {
+  document.getElementById('cico-student').value = stuParam;
+  loadStudentSettings(stuParam);
+  currentPeriods = getSelectedPeriods();
+  currentScale = parseInt(document.getElementById('cico-scale').value);
+  renderScoreInput();
+  renderRecords();
+  renderGraph();
+}
+</script>
+</body>
+</html>

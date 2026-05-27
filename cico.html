@@ -142,6 +142,14 @@ input[type="text"],input[type="number"],input[type="date"],select,textarea{
       </div>
     </div>
     <div class="fg">
+  <label>목표 행동 (최대 5개)</label>
+  <div id="goal-list"></div>
+  <div style="display:flex;gap:6px;margin-top:6px">
+    <input type="text" id="new-goal" placeholder="예: 수업에 참여하기" style="flex:1;padding:6px 10px;font-size:12px">
+    <button class="btn btn-out btn-sm" onclick="addGoal()">+ 추가</button>
+  </div>
+</div>
+    <div class="fg">
       <label>점수 체계</label>
       <select id="cico-scale">
         <option value="3">0-1-2 (3점 척도)</option>
@@ -254,7 +262,33 @@ function getSelectedPeriods() {
 function togglePeriod(btn) {
   btn.classList.toggle('active');
 }
+let currentGoals = ['수업 참여하기'];
 
+function renderGoals() {
+  const box = document.getElementById('goal-list');
+  box.innerHTML = currentGoals.map((g, i) => 
+    `<div style="display:flex;align-items:center;gap:6px;margin:4px 0">
+      <span style="flex:1;padding:6px 10px;background:var(--bg);border-radius:6px;font-size:13px">${g}</span>
+      <span style="color:var(--danger);cursor:pointer;font-size:16px;padding:4px" onclick="removeGoal(${i})">×</span>
+    </div>`
+  ).join('');
+}
+
+function addGoal() {
+  const input = document.getElementById('new-goal');
+  const name = input.value.trim();
+  if (!name) return;
+  if (currentGoals.length >= 5) return alert('목표는 최대 5개까지 가능합니다.');
+  if (currentGoals.includes(name)) return alert('이미 있는 목표입니다.');
+  currentGoals.push(name);
+  input.value = '';
+  renderGoals();
+}
+
+function removeGoal(idx) {
+  currentGoals.splice(idx, 1);
+  renderGoals();
+}
 function addCustomPeriod() {
   const input = document.getElementById('custom-period');
   const name = input.value.trim();
@@ -291,11 +325,12 @@ function applySettings() {
   // 설정 저장
   const data = getCICOData();
   if (!data[student]) data[student] = { settings: {}, records: [] };
-  data[student].settings = {
-    periods: currentPeriods,
-    scale: currentScale,
-    goal: goal
-  };
+ data[student].settings = {
+  periods: currentPeriods,
+  goals: currentGoals,
+  scale: currentScale,
+  goal: goal
+};
   saveCICOData(data);
 
   currentScores = {};
@@ -336,6 +371,12 @@ function loadStudentSettings(student) {
     if (s.goal) {
       document.getElementById('cico-goal').value = s.goal;
     }
+    if (s.goals) {
+      currentGoals = s.goals;
+    } else {
+      currentGoals = ['수업 참여하기'];
+    }
+    renderGoals();
   }
 }
 
@@ -344,33 +385,40 @@ function loadStudentSettings(student) {
 // ═══════════════════════════════════════
 function renderScoreInput() {
   const area = document.getElementById('score-input-area');
-  if (!currentPeriods.length) {
+  if (!currentPeriods.length || !currentGoals.length) {
     area.innerHTML = '<div class="empty-msg">설정을 먼저 적용해주세요.</div>';
     return;
   }
 
   area.innerHTML = currentPeriods.map((period, pi) => {
-    let btns = '';
-    for (let s = 0; s < currentScale; s++) {
-      btns += `<button class="score-btn" data-period="${pi}" data-score="${s}" onclick="selectScore(${pi},${s})">${s}</button>`;
-    }
-    return `<div class="score-row">
-      <span class="period-label">${period}</span>
-      <div class="score-btns">${btns}</div>
+    const goalRows = currentGoals.map((goal, gi) => {
+      let btns = '';
+      for (let s = 0; s < currentScale; s++) {
+        btns += `<button class="score-btn" data-key="${pi}-${gi}" data-score="${s}" onclick="selectScore(${pi},${gi},${s})">${s}</button>`;
+      }
+      return `<div style="display:flex;align-items:center;gap:8px;margin:2px 0">
+        <span style="font-size:11px;color:var(--sub);min-width:60px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap">${goal}</span>
+        <div class="score-btns">${btns}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="score-row" style="flex-direction:column;align-items:stretch">
+      <span class="period-label" style="margin-bottom:4px;font-weight:600">${period}</span>
+      ${goalRows}
     </div>`;
   }).join('');
 
   updateTodayTotal();
 }
 
-function selectScore(periodIdx, score) {
-  currentScores[periodIdx] = score;
+function selectScore(periodIdx, goalIdx, score) {
+  const key = `${periodIdx}-${goalIdx}`;
+  currentScores[key] = score;
 
-  // UI 업데이트
-  document.querySelectorAll(`[data-period="${periodIdx}"]`).forEach(btn => {
+  document.querySelectorAll(`[data-key="${key}"]`).forEach(btn => {
     btn.className = 'score-btn';
   });
-  const selected = document.querySelector(`[data-period="${periodIdx}"][data-score="${score}"]`);
+  const selected = document.querySelector(`[data-key="${key}"][data-score="${score}"]`);
   if (selected) selected.classList.add(`selected-${Math.min(score, 2)}`);
 
   updateTodayTotal();
@@ -378,7 +426,7 @@ function selectScore(periodIdx, score) {
 
 function updateTodayTotal() {
   const total = Object.values(currentScores).reduce((sum, v) => sum + v, 0);
-  const max = currentPeriods.length * (currentScale - 1);
+  const max = currentPeriods.length * currentGoals.length * (currentScale - 1);
   const pct = max > 0 ? Math.round(total / max * 100) : 0;
   const goal = parseInt(document.getElementById('cico-goal').value) || 80;
 
@@ -408,18 +456,19 @@ function saveScore() {
   if (!date) return alert('날짜를 선택해주세요.');
 
   const total = Object.values(currentScores).reduce((sum, v) => sum + v, 0);
-  const max = currentPeriods.length * (currentScale - 1);
+  const max = currentPeriods.length * currentGoals.length * (currentScale - 1);
   const pct = max > 0 ? Math.round(total / max * 100) : 0;
 
   const record = {
-    date: date,
-    scores: { ...currentScores },
-    periods: [...currentPeriods],
-    total: total,
-    max: max,
-    pct: pct,
-    id: Date.now()
-  };
+  date: date,
+  scores: { ...currentScores },
+  periods: [...currentPeriods],
+  goals: [...currentGoals],
+  total: total,
+  max: max,
+  pct: pct,
+  id: Date.now()
+};
 
   const data = getCICOData();
   if (!data[student]) data[student] = { settings: {}, records: [] };
@@ -742,6 +791,7 @@ function goBack() {
 // INIT
 // ═══════════════════════════════════════
 document.getElementById('cico-date').value = new Date().toISOString().split('T')[0];
+renderGoals();
 
 // URL 파라미터에서 학생 이름 받기
 const params = new URLSearchParams(location.search);

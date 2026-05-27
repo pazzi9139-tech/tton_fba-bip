@@ -115,6 +115,12 @@ input[type="text"],input[type="number"],input[type="date"],select,textarea{
   <div class="card">
     <div class="card-t">학생 및 평정 설정</div>
     <div class="card-d">CICO 카드의 시간대와 점수 체계를 설정합니다.</div>
+    <div class="fg">
+  <label>저장된 학생</label>
+  <select id="cico-student-list" onchange="loadCICOStudent()" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border);font-size:12px">
+    <option value="">저장된 학생 선택</option>
+  </select>
+</div>
     <div class="row">
       <div class="fg">
         <label>학생 이름</label>
@@ -780,6 +786,27 @@ function exportPDF() {
 // 네비게이션
 // ═══════════════════════════════════════
 function goBack() {
+  function renderCICOStudentList() {
+  const data = getCICOData();
+  const select = document.getElementById('cico-student-list');
+  select.innerHTML = '<option value="">저장된 학생 선택</option>';
+  Object.keys(data).forEach(name => {
+    select.innerHTML += `<option value="${name}">${name}</option>`;
+  });
+}
+
+function loadCICOStudent() {
+  const select = document.getElementById('cico-student-list');
+  const name = select.value;
+  if (!name) return;
+  document.getElementById('cico-student').value = name;
+  loadStudentSettings(name);
+  currentPeriods = getSelectedPeriods();
+  currentScale = parseInt(document.getElementById('cico-scale').value);
+  renderScoreInput();
+  renderRecords();
+  renderGraph();
+}
   if (document.referrer && document.referrer.includes('index.html')) {
     history.back();
   } else {
@@ -792,6 +819,7 @@ function goBack() {
 // ═══════════════════════════════════════
 document.getElementById('cico-date').value = new Date().toISOString().split('T')[0];
 renderGoals();
+renderCICOStudentList();
 
 // URL 파라미터에서 학생 이름 받기
 const params = new URLSearchParams(location.search);

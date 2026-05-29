@@ -786,8 +786,7 @@ function exportPDF() {
 // ═══════════════════════════════════════
 // 네비게이션
 // ═══════════════════════════════════════
-function goBack() {
-  function renderCICOStudentList() {
+function renderCICOStudentList() {
   const data = getCICOData();
   const select = document.getElementById('cico-student-list');
   select.innerHTML = '<option value="">저장된 학생 선택</option>';
@@ -808,6 +807,8 @@ function loadCICOStudent() {
   renderRecords();
   renderGraph();
 }
+function goBack() {
+
   if (document.referrer && document.referrer.includes('index.html')) {
     history.back();
   } else {
